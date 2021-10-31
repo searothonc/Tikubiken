@@ -7,6 +7,12 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TikubiUp", "TikubiUp\Tikubi
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tikubiken", "Tikubiken\Tikubiken.csproj", "{8D71715C-D17D-43E2-8B60-1180756D5F38}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "dtd", "dtd", "{D54E502B-306A-49D9-898E-1F5D20F46B05}"
+	ProjectSection(SolutionItems) = preProject
+		dtd\tikubiken_diff100.xml = dtd\tikubiken_diff100.xml
+		dtd\tikubiken_patch100.xml = dtd\tikubiken_patch100.xml
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

@@ -9,11 +9,88 @@
 <!--============================================================---
 <---	<Tikubiken>
 <---============================================================-->
-<!ELEMENT Tikubiken	(updator, version*) >
+<!ELEMENT Tikubiken	(updator, patch*, install+) >
 <!ATTLIST Tikubiken	version CDATA #IMPLIED "1.00" >
 <!ATTLIST Tikubiken	format CDATA #FIXED "diff" >
 
 
+<!--======================================================================---
+<---	<updator>
+<---======================================================================-->
+<!ELEMENT updator	(cover?|title*) >
+
+<!-- ---------------------------------------- ---
+<---	<cover>
+<--- ---------------------------------------- -->
+<!ELEMENT cover	EMPTY>
+<!ATTLIST cover image	CDATA #IMPLIED>
+
+<!-- ---------------------------------------- ---
+<---	<title>
+<--- ---------------------------------------- -->
+<!ELEMENT title	EMPTY>
+<!ATTLIST title text	CDATA #REQUIRED>
+<!ATTLIST title lang	CDATA #IMPLIED><!-- IETF language tag RFC 5646 -->
+
+
+<!--======================================================================---
+<---	<patch>
+<---======================================================================-->
+<!ELEMENT patch	(target,result) >
+<!ATTLIST patch version	ID		#REQUIRED>
+
+<!-- ---------------------------------------- ---
+<---	<target>
+<--- ---------------------------------------- -->
+<!ELEMENT target	EMPTY>
+<!ATTLIST target path	CDATA #REQUIRED>
+
+<!-- ---------------------------------------- ---
+<---	<result>
+<--- ---------------------------------------- -->
+<!ELEMENT result	EMPTY>
+<!ATTLIST result path	CDATA #REQUIRED>
+
+
+<!--======================================================================---
+<---	<install>
+<---======================================================================-->
+<!ELEMENT install	(registry?, identity+) >
+
+<!-- ---------------------------------------- ---
+<---	<registry>
+<--- ---------------------------------------- -->
+<!ELEMENT registry	EMPTY>
+<!ATTLIST install root		(HKEY_CLASSES_ROOT|HKEY_CURRENT_USER|HKEY_LOCAL_MACHINE|HKEY_USERS|HKEY_USERS|HKCR|HKCU|HKLM|HKU|HKCC) #REQUIRED>
+<!ATTLIST install subkey	CDATA #REQUIRED>
+<!ATTLIST install value		CDATA #REQUIRED>
+
+
+<!--======================================================================---
+<---	<identity>
+<---======================================================================-->
+<!ELEMENT identity	((patch|patchref), message) >
+<!ATTLIST identity path		CDATA #REQUIRED>
+<!ATTLIST identity method	(MD5|SHA1) SHA1>
+
+<!-- ---------------------------------------- ---
+<---	<patchref>
+<--- ---------------------------------------- -->
+<!ELEMENT patchref EMPTY>
+<!ATTLIST install version	IDREF #REQUIRED>
+
+
+<!--======================================================================---
+<---	<message>
+<---======================================================================-->
+<!ELEMENT message	(text+)>
+
+<!-- ---------------------------------------- ---
+<---	<text>
+<--- ---------------------------------------- -->
+<!ELEMENT text (#PCDATA)>
+<!ATTLIST text lang	NMTOKEN #IMPLIED><!-- IETF language tag RFC 5646 -->
+<!ATTLIST text type	(ready|process|complete|error|err_misplace) ready>
 
 <!--############################################################-->
 ]>

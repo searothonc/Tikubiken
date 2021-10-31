@@ -28,6 +28,7 @@
 <!-- ---------------------------------------- ---
 <---	<title>
 <--- ---------------------------------------- -->
+<!ELEMENT title	EMPTY>
 <!ATTLIST title text	CDATA #REQUIRED>
 <!ATTLIST title lang	CDATA #IMPLIED><!-- IETF language tag RFC 5646 -->
 
@@ -36,8 +37,7 @@
 <---	<patch>
 <---======================================================================-->
 <!ELEMENT patch	(remove*) >
-<!ATTLIST patch id			ID			#IMPLIED>
-<!ATTLIST patch version	CDATA		#REQUIRED>
+<!ATTLIST patch version	ID		#REQUIRED>
 
 <!-- ---------------------------------------- ---
 <---	<remove>
@@ -72,7 +72,7 @@
 <---	<patchref>
 <--- ---------------------------------------- -->
 <!ELEMENT patchref EMPTY>
-<!ATTLIST install ref	IDREF #REQUIRED>
+<!ATTLIST install version	IDREF #REQUIRED>
 
 
 <!--======================================================================---
@@ -84,8 +84,8 @@
 <---	<text>
 <--- ---------------------------------------- -->
 <!ELEMENT text (#PCDATA)>
-<!ATTLIST text lang	NMTOKEN #IMPLIED>
-<!ATTLIST text type	(ready|process|error|complete) ready>
+<!ATTLIST text lang	NMTOKEN #IMPLIED><!-- IETF language tag RFC 5646 -->
+<!ATTLIST text type	(ready|process|complete|error|err_misplace) ready>
 <!--
 <!ATTLIST text format	(plain|html|rtf)>
 -->
