@@ -1,0 +1,94 @@
+<!DOCTYPE Tikubiken [
+<!--######################################################################---
+<---	Tikubiken patch XML definition
+<---	Version 1.00
+<---	2021-10-30
+<---	Copyright (c) Searothonc
+<---######################################################################-->
+
+<!--======================================================================---
+<---	<Tikubiken>
+<---======================================================================-->
+<!ELEMENT Tikubiken	(updator, patch*, install+) >
+<!ATTLIST Tikubiken	version CDATA #IMPLIED "1.00" >
+<!ATTLIST Tikubiken format	CDATA #FIXED "patch" >
+
+
+<!--======================================================================---
+<---	<updator>
+<---======================================================================-->
+<!ELEMENT updator	(cover?|title*) >
+
+<!-- ---------------------------------------- ---
+<---	<cover>
+<--- ---------------------------------------- -->
+<!ELEMENT cover	EMPTY>
+<!ATTLIST cover image	CDATA #IMPLIED>
+
+<!-- ---------------------------------------- ---
+<---	<title>
+<--- ---------------------------------------- -->
+<!ATTLIST title text	CDATA #REQUIRED>
+<!ATTLIST title lang	CDATA #IMPLIED><!-- IETF language tag RFC 5646 -->
+
+
+<!--======================================================================---
+<---	<patch>
+<---======================================================================-->
+<!ELEMENT patch	(remove*) >
+<!ATTLIST patch id			ID			#IMPLIED>
+<!ATTLIST patch version	CDATA		#REQUIRED>
+
+<!-- ---------------------------------------- ---
+<---	<remove>
+<--- ---------------------------------------- -->
+<!ELEMENT remove	EMPTY>
+<!ATTLIST remove path	CDATA #REQUIRED>
+
+
+<!--======================================================================---
+<---	<install>
+<---======================================================================-->
+<!ELEMENT install	(registry?, identity+) >
+
+<!-- ---------------------------------------- ---
+<---	<registry>
+<--- ---------------------------------------- -->
+<!ELEMENT registry	EMPTY>
+<!ATTLIST install root		(HKEY_CLASSES_ROOT|HKEY_CURRENT_USER|HKEY_LOCAL_MACHINE|HKEY_USERS|HKEY_USERS|HKCR|HKCU|HKLM|HKU|HKCC) #REQUIRED>
+<!ATTLIST install subkey	CDATA #REQUIRED>
+<!ATTLIST install value		CDATA #REQUIRED>
+
+
+<!--======================================================================---
+<---	<identity>
+<---======================================================================-->
+<!ELEMENT identity	((patch|patchref), message) >
+<!ATTLIST identity path		CDATA #REQUIRED>
+<!ATTLIST identity method	(MD5|SHA1) SHA1>
+<!ATTLIST identity value	CDATA #REQUIRED>
+
+<!-- ---------------------------------------- ---
+<---	<patchref>
+<--- ---------------------------------------- -->
+<!ELEMENT patchref EMPTY>
+<!ATTLIST install ref	IDREF #REQUIRED>
+
+
+<!--======================================================================---
+<---	<message>
+<---======================================================================-->
+<!ELEMENT message	(text+)>
+
+<!-- ---------------------------------------- ---
+<---	<text>
+<--- ---------------------------------------- -->
+<!ELEMENT text (#PCDATA)>
+<!ATTLIST text lang	NMTOKEN #IMPLIED>
+<!ATTLIST text type	(ready|process|error|complete) ready>
+<!--
+<!ATTLIST text format	(plain|html|rtf)>
+-->
+
+<!--######################################################################-->
+]>
