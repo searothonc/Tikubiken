@@ -23,7 +23,8 @@
 <---	<cover>
 <--- ---------------------------------------- -->
 <!ELEMENT cover	EMPTY>
-<!ATTLIST cover image	CDATA #IMPLIED>
+<!ATTLIST cover image	CDATA #REQUIRED>
+<!ATTLIST cover lang	CDATA #IMPLIED>
 
 <!-- ---------------------------------------- ---
 <---	<title>

@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.31105.61
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TikubiUp", "TikubiUp\TikubiUp.csproj", "{A26B9019-5570-4DE3-9587-19746A814A08}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Update", "Update\Update.csproj", "{A26B9019-5570-4DE3-9587-19746A814A08}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tikubiken", "Tikubiken\Tikubiken.csproj", "{8D71715C-D17D-43E2-8B60-1180756D5F38}"
 EndProject
@@ -11,6 +11,12 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "dtd", "dtd", "{D54E502B-306
 	ProjectSection(SolutionItems) = preProject
 		dtd\tikubiken_diff100.xml = dtd\tikubiken_diff100.xml
 		dtd\tikubiken_patch100.xml = dtd\tikubiken_patch100.xml
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "dll", "dll", "{A8363D18-C5F1-47FD-8096-F8CD4F07589F}"
+	ProjectSection(SolutionItems) = preProject
+		dll\bslib.dll = dll\bslib.dll
+		dll\ICSharpCode.SharpZipLib.dll = dll\ICSharpCode.SharpZipLib.dll
 	EndProjectSection
 EndProject
 Global

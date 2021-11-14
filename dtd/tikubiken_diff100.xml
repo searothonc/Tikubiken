@@ -18,12 +18,14 @@
 <---	<updator>
 <---======================================================================-->
 <!ELEMENT updator	(cover?|title*) >
+<!ATTLIST updator link	(merge|separate) merge>
 
 <!-- ---------------------------------------- ---
 <---	<cover>
 <--- ---------------------------------------- -->
 <!ELEMENT cover	EMPTY>
-<!ATTLIST cover image	CDATA #IMPLIED>
+<!ATTLIST cover image	CDATA #REQUIRED>
+<!ATTLIST cover lang	CDATA #IMPLIED>
 
 <!-- ---------------------------------------- ---
 <---	<title>

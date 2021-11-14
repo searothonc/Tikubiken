@@ -9,8 +9,8 @@
     <Authors>Searothonc</Authors>
     <Company>Searothonc</Company>
     <Description>A self-extracting binary patch utility.</Description>
-    <AssemblyName>TikubiUp</AssemblyName>
-    <RootNamespace>TikubiUp</RootNamespace>
+    <AssemblyName>Update</AssemblyName>
+    <RootNamespace>Update</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>

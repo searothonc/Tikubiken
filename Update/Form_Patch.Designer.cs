@@ -34,8 +34,8 @@ namespace Tikubiken
             this.button_start = new System.Windows.Forms.Button();
             this.label_message = new System.Windows.Forms.Label();
             this.label_Progress = new System.Windows.Forms.Label();
-            this.pictureBox1 = new System.Windows.Forms.PictureBox();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
+            this.pictureBox = new System.Windows.Forms.PictureBox();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox)).BeginInit();
             this.SuspendLayout();
             // 
             // progressBar
@@ -48,6 +48,7 @@ namespace Tikubiken
             resources.ApplyResources(this.button_start, "button_start");
             this.button_start.Name = "button_start";
             this.button_start.UseVisualStyleBackColor = true;
+            this.button_start.Click += new System.EventHandler(this.button_start_Click);
             // 
             // label_message
             // 
@@ -61,18 +62,18 @@ namespace Tikubiken
             resources.ApplyResources(this.label_Progress, "label_Progress");
             this.label_Progress.Name = "label_Progress";
             // 
-            // pictureBox1
+            // pictureBox
             // 
-            this.pictureBox1.Image = global::TikubiUp.Properties.Resources.cover_update;
-            resources.ApplyResources(this.pictureBox1, "pictureBox1");
-            this.pictureBox1.Name = "pictureBox1";
-            this.pictureBox1.TabStop = false;
+            resources.ApplyResources(this.pictureBox, "pictureBox");
+            this.pictureBox.Image = global::Update.Properties.Resources.cover_update;
+            this.pictureBox.Name = "pictureBox";
+            this.pictureBox.TabStop = false;
             // 
             // Form_Patch
             // 
             resources.ApplyResources(this, "$this");
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.Controls.Add(this.pictureBox1);
+            this.Controls.Add(this.pictureBox);
             this.Controls.Add(this.label_Progress);
             this.Controls.Add(this.label_message);
             this.Controls.Add(this.button_start);
@@ -80,7 +81,8 @@ namespace Tikubiken
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.MaximizeBox = false;
             this.Name = "Form_Patch";
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
+            this.Load += new System.EventHandler(this.Form_Patch_Load);
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -92,7 +94,7 @@ namespace Tikubiken
         private System.Windows.Forms.Button button_start;
         private System.Windows.Forms.Label label_message;
         private System.Windows.Forms.Label label_Progress;
-        private System.Windows.Forms.PictureBox pictureBox1;
+        private System.Windows.Forms.PictureBox pictureBox;
     }
 }
 

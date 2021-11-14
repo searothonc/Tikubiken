@@ -165,6 +165,8 @@ namespace TikubiDiff
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "Form_Diff";
             this.Text = "Tikubiken";
+            this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.Form_Diff_FormClosed);
+            this.Load += new System.EventHandler(this.Form_Diff_Load);
             this.ResumeLayout(false);
             this.PerformLayout();
 

@@ -59,5 +59,14 @@ namespace Tikubiken.Properties {
                 resourceCulture = value;
             }
         }
+        
+        /// <summary>
+        ///   XML files (*.xml)|*.xml|All files (*.*)|*.* に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        internal static string ofd_filter {
+            get {
+                return ResourceManager.GetString("ofd_filter", resourceCulture);
+            }
+        }
     }
 }
