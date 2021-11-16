@@ -9,7 +9,7 @@
 <!--======================================================================---
 <---	<Tikubiken>
 <---======================================================================-->
-<!ELEMENT Tikubiken	(updator, patch*, install+) >
+<!ELEMENT Tikubiken	(updator?, patch*, install+) >
 <!ATTLIST Tikubiken	version CDATA #IMPLIED "1.00" >
 <!ATTLIST Tikubiken format	CDATA #FIXED "patch" >
 
