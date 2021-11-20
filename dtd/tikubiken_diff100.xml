@@ -43,14 +43,20 @@
 <!-- ---------------------------------------- ---
 <---	<branch>
 <--- ---------------------------------------- -->
-<!ELEMENT branch	EMPTY>
+<!ELEMENT branch	exclude*>
 <!ATTLIST branch path	CDATA #REQUIRED>
 
 <!-- ---------------------------------------- ---
 <---	<target>
 <--- ---------------------------------------- -->
-<!ELEMENT target	EMPTY>
+<!ELEMENT target	*>
 <!ATTLIST target path	CDATA #REQUIRED>
+
+<!-- ---------------------------------------- ---
+<---	<exclude>
+<--- ---------------------------------------- -->
+<!ELEMENT exclude	EMPTY>
+<!ATTLIST exclude path	CDATA #REQUIRED>
 
 
 <!--======================================================================---
