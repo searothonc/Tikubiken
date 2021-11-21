@@ -20,7 +20,7 @@ namespace Tikubiken
 		/// Value container used in async message of Progress<T>
 		/// adaptable for both text logging and Progress control
 		/// </summary>
-		public class ProgressState
+		public struct ProgressState
 		{
 			public enum Op
 			{
@@ -32,28 +32,16 @@ namespace Tikubiken
 
 			// Fields
 			//------------------------------
-			private int		_value;
-			private string	_text;
+			//private int		_value;
+			//private string	_text;
 
 			// Propeerties
 			//------------------------------
-			public int		Min		{ get; set; }
-			public int		Max		{ get; set; }
-			public int		Value	{ get; set; }
-			public string	Text	{ get; set; }
-			public Op		Usage	{ get; set; }
-
-			// Initalyzation & Cleaning up
-			//------------------------------
-			/// <summary>Constructor</summary>
-			public ProgressState()
-			{
-				Min		= 0;
-				Max		= 100;
-				Value	= 0;
-				Text	= "";
-				Usage	= Op.None;
-			}
+			public Op		Usage;
+			public int		Min;
+			public int		Max;
+			public int		Value;
+			public string	Text;
 
 			// Value availability
 			//------------------------------
@@ -82,12 +70,12 @@ namespace Tikubiken
 		// CancellationTokenSource for asyncronous processing
 		private CancellationTokenSource		ctSource;
 
+		/// <summary>Progress state</summary>
+		public ProgressState CurrentProgress;
+
 		//--------------------------------------------------------
 		// Properties
 		//--------------------------------------------------------
-
-		// Progress state
-		public ProgressState CurrentProgress { private set; get; }
 
 		// File paths
 		public string SourceXML		{ private set; get; }
@@ -97,9 +85,16 @@ namespace Tikubiken
 		// Constructors
 		//--------------------------------------------------------
 		///	<summary>Constructor</summary>
-		public Processor()
+		// 	<param name="handler">(Action{ProgressState})
+		///	Callback method to operate progress by retrieving 
+		//	newest state via ProgressState object as parametor.
+		/// </param>
+		public Processor(Action<ProgressState> handler)
 		{
-			m_progress = null;
+			//m_progress = null;
+
+			// Initialyze Progress<T> and state container
+			InitProgressState(handler);
 
 			// Create cancellation token source
 			ctSource = new CancellationTokenSource();
@@ -113,7 +108,11 @@ namespace Tikubiken
 		private void InitProgressState(Action<ProgressState> handler)
 		{
 			m_progress = new Progress<ProgressState>(handler);
-			CurrentProgress = new ProgressState();
+			CurrentProgress.Usage	= ProgressState.Op.None;
+			CurrentProgress.Min		= 0;
+			CurrentProgress.Max		= 100;
+			CurrentProgress.Value	= 0;
+			CurrentProgress.Text	= "";
 		}
 
 		///	<summary>Dispose objects</summary>
@@ -121,11 +120,9 @@ namespace Tikubiken
 		{
 			// Progress<T> and state container
 			m_progress = null;
-			CurrentProgress = null;
-			
 
 			// Dispose cancellation token source
-			if ( ctSource != null ) ctSource.Dispose();
+			ctSource.Dispose();
 			ctSource = null;
 
 			// for this class itself
@@ -143,24 +140,17 @@ namespace Tikubiken
 		///	<summary>
 		///	Entry point of async task
 		///	</summary>
-		// 	<param name="handler">(Action{ProgressState})
-		///	Callback method to operate progress by retrieving 
-		//	newest state via ProgressState object as parametor.
-		/// </param>
 		///	<remark>
 		///	Usually caller need dispose using block to dipose Processor such as:
 		///		// Triggering UI disable codes here
-		///		using ( var processor = new Processor() )
+		///		using ( var processor = new Processor(handler) )
 		///		{
-		///			await processor.RunAsync(handler);
+		///			await processor.RunAsync();
 		///		}
 		///		// Triggering UI enable codes here
 		///	</remark>
-		public async Task RunAsync(Action<ProgressState> handler)
+		public async Task RunAsync()
 		{
-			// Initialyze Progress<T> and state container
-			InitProgressState(handler);
-
 			try
 			{
 				await Task.Run( () => RunBody() );
@@ -200,7 +190,7 @@ namespace Tikubiken
 			// Eveny point where the running operation can be cancelled,
 			// the method call to throw OperationCanceledException is needed.
 			//	<code>
-			//		ctSource.Token.ThrowIfCancellationRequested();
+			//		ThrowIfCancellationRequested();
 			//	</code>
 			// If UI thread has posted cancel request,
 			// OperationCanceledException will be thrown there,
@@ -208,6 +198,12 @@ namespace Tikubiken
 			// in the caller method this.RunAsync().
 
 			Test1();
+		}
+
+		private void ThrowIfCancellationRequested()
+		{
+			if ( ctSource == null ) return;
+			ctSource.Token.ThrowIfCancellationRequested();
 		}
 
 		private void Report(string text)
@@ -234,6 +230,7 @@ namespace Tikubiken
 
 		private void PostReport()
 		{
+			if ( m_progress == null ) return;
 			m_progress.Report(CurrentProgress);
 		}
 
@@ -249,6 +246,8 @@ namespace Tikubiken
 				int s = i+1;
 				Report( $"{s} seconds" );			// log 1 second past
 			}
+			Report( CurrentProgress.Max );			// progress completion
+			Thread.Sleep(500);		// 0.5 seconds
 		}
 
 		private void Test2()
@@ -258,7 +257,7 @@ namespace Tikubiken
 			{
 				Thread.Sleep(100);		// 0.1 seconds
 				// check cancellation every 0.1 seconds
-				ctSource.Token.ThrowIfCancellationRequested();
+				ThrowIfCancellationRequested();
 				Report( CurrentProgress.Value + 1 );	// progress 1 tick
 			}
 		}
