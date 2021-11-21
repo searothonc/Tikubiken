@@ -84,12 +84,17 @@
 <!-- ---------------------------------------- ---
 <---	<text>
 <--- ---------------------------------------- -->
-<!ELEMENT text (#PCDATA)>
+<!ELEMENT text (#PCDATA|br)*>
 <!ATTLIST text lang	NMTOKEN #IMPLIED><!-- IETF language tag RFC 5646 -->
 <!ATTLIST text type	(ready|process|complete|error|err_misplace) ready>
 <!--
 <!ATTLIST text format	(plain|html|rtf)>
 -->
+
+<!-- ---------------------------------------- ---
+<---	<br/>
+<--- ---------------------------------------- -->
+<!ELEMENT br	EMPTY>
 
 <!--######################################################################-->
 ]>
