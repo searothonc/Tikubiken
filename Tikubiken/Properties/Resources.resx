@@ -117,7 +117,16 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="ofd_filter" xml:space="preserve">
+  <data name="btntext_Cancel" xml:space="preserve">
+    <value>&amp;Cancel</value>
+  </data>
+  <data name="btntext_Start" xml:space="preserve">
+    <value>&amp;Start</value>
+  </data>
+  <data name="ofd_out_filter" xml:space="preserve">
+    <value>Executable files (*.exe)|*.exe|TBP files (*.tbp)|*.tbp|All files (*.*)|*.*</value>
+  </data>
+  <data name="ofd_src_filter" xml:space="preserve">
     <value>XML files (*.xml)|*.xml|All files (*.*)|*.*</value>
   </data>
 </root>

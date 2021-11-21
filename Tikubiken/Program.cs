@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace TikubiDiff
+namespace Tikubiken
 {
     static class Program
     {
@@ -17,7 +17,7 @@ namespace TikubiDiff
             Application.SetHighDpiMode(HighDpiMode.SystemAware);
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new Form_Diff());
+            Application.Run(new FormDiff());
         }
     }
 }

@@ -37,6 +37,7 @@ namespace Tikubiken
 		public string iniPath	{ get; }
 
 		public string lastDir	{ get; set; }
+		public string lastOut	{ get; set; }
 
 		//------------------------------------------------------------
 		// Constructors
@@ -44,8 +45,8 @@ namespace Tikubiken
 		public MyApp()
 		{
 			// Path name for .INI file
-			exeDir = Application.StartupPath;
-			iniPath = exeDir + "\\" + INI_name;
+			exeDir = System.Environment.CurrentDirectory;
+			iniPath = exeDir + Path.DirectorySeparatorChar + INI_name;
 
 			// Load INI file
 			iniDoc = IniLoad();
@@ -72,6 +73,7 @@ namespace Tikubiken
 
 			// Retrieve values
 			lastDir = ini.Get( "Status", "LastDir", exeDir );
+			lastOut = ini.Get( "Status", "LastOut", exeDir );
 
 			// Returns document if succeed
 			return ini;
@@ -81,13 +83,14 @@ namespace Tikubiken
 		public void IniSave()
 		{
 			iniDoc.Set( "Status", "LastDir", lastDir );
+			iniDoc.Set( "Status", "LastOut", lastOut );
 
 			try
 			{
 
-				using( var file = new StreamWriter(iniPath, false, Encoding.UTF8) )
+				using(var file = new StreamWriter(iniPath, false, Encoding.UTF8) )
 				{
-					file.NewLine = "\r\n";
+					file.NewLine = Environment.NewLine;
 					iniDoc.Save( file );
 				}
 			}

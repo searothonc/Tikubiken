@@ -13,6 +13,11 @@
     <RootNamespace>Update</RootNamespace>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <DebugType>none</DebugType>
+    <DebugSymbols>false</DebugSymbols>
+  </PropertyGroup>
+
   <ItemGroup>
     <None Remove="Resources\cover-update.jpg" />
     <None Remove="Resources\cover.jpg" />

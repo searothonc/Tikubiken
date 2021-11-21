@@ -1,7 +1,7 @@
 ﻿
 namespace Tikubiken
 {
-    partial class Form_Patch
+    partial class FormPatch
     {
         /// <summary>
         ///  Required designer variable.
@@ -29,12 +29,12 @@ namespace Tikubiken
         /// </summary>
         private void InitializeComponent()
         {
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form_Patch));
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FormPatch));
             this.progressBar = new System.Windows.Forms.ProgressBar();
             this.button_start = new System.Windows.Forms.Button();
-            this.label_message = new System.Windows.Forms.Label();
             this.label_Progress = new System.Windows.Forms.Label();
             this.pictureBox = new System.Windows.Forms.PictureBox();
+            this.labelMessage = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox)).BeginInit();
             this.SuspendLayout();
             // 
@@ -50,13 +50,6 @@ namespace Tikubiken
             this.button_start.UseVisualStyleBackColor = true;
             this.button_start.Click += new System.EventHandler(this.button_start_Click);
             // 
-            // label_message
-            // 
-            resources.ApplyResources(this.label_message, "label_message");
-            this.label_message.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.label_message.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.label_message.Name = "label_message";
-            // 
             // label_Progress
             // 
             resources.ApplyResources(this.label_Progress, "label_Progress");
@@ -69,19 +62,25 @@ namespace Tikubiken
             this.pictureBox.Name = "pictureBox";
             this.pictureBox.TabStop = false;
             // 
-            // Form_Patch
+            // labelMessage
+            // 
+            resources.ApplyResources(this.labelMessage, "labelMessage");
+            this.labelMessage.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
+            this.labelMessage.Name = "labelMessage";
+            // 
+            // FormPatch
             // 
             resources.ApplyResources(this, "$this");
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.Controls.Add(this.labelMessage);
             this.Controls.Add(this.pictureBox);
             this.Controls.Add(this.label_Progress);
-            this.Controls.Add(this.label_message);
             this.Controls.Add(this.button_start);
             this.Controls.Add(this.progressBar);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.MaximizeBox = false;
-            this.Name = "Form_Patch";
-            this.Load += new System.EventHandler(this.Form_Patch_Load);
+            this.Name = "FormPatch";
+            this.Load += new System.EventHandler(this.FormPatch_Load);
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
@@ -92,9 +91,9 @@ namespace Tikubiken
 
         private System.Windows.Forms.ProgressBar progressBar;
         private System.Windows.Forms.Button button_start;
-        private System.Windows.Forms.Label label_message;
         private System.Windows.Forms.Label label_Progress;
         private System.Windows.Forms.PictureBox pictureBox;
+        private System.Windows.Forms.Label labelMessage;
     }
 }
 

@@ -57,26 +57,26 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
+  <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
   <data name="progressBar.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>Bottom, Left, Right</value>
   </data>
-  <assembly alias="System.Drawing.Primitives" name="System.Drawing.Primitives, Version=4.2.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
-  <data name="progressBar.Location" type="System.Drawing.Point, System.Drawing.Primitives">
+  <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
+  <data name="progressBar.Location" type="System.Drawing.Point, System.Drawing">
     <value>8, 248</value>
   </data>
-  <data name="progressBar.Size" type="System.Drawing.Size, System.Drawing.Primitives">
+  <data name="progressBar.Size" type="System.Drawing.Size, System.Drawing">
     <value>472, 23</value>
   </data>
-  <assembly alias="System.Private.CoreLib" name="System.Private.CoreLib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e" />
-  <data name="progressBar.TabIndex" type="System.Int32, System.Private.CoreLib">
+  <assembly alias="mscorlib" name="mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
+  <data name="progressBar.TabIndex" type="System.Int32, mscorlib">
     <value>0</value>
   </data>
   <data name="&gt;&gt;progressBar.Name" xml:space="preserve">
     <value>progressBar</value>
   </data>
   <data name="&gt;&gt;progressBar.Type" xml:space="preserve">
-    <value>System.Windows.Forms.ProgressBar, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    <value>System.Windows.Forms.ProgressBar, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;progressBar.Parent" xml:space="preserve">
     <value>$this</value>
@@ -87,16 +87,16 @@
   <data name="button_start.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>Bottom</value>
   </data>
-  <data name="button_start.Location" type="System.Drawing.Point, System.Drawing.Primitives">
+  <data name="button_start.Location" type="System.Drawing.Point, System.Drawing">
     <value>208, 208</value>
   </data>
-  <data name="button_start.MinimumSize" type="System.Drawing.Size, System.Drawing.Primitives">
+  <data name="button_start.MinimumSize" type="System.Drawing.Size, System.Drawing">
     <value>96, 24</value>
   </data>
-  <data name="button_start.Size" type="System.Drawing.Size, System.Drawing.Primitives">
+  <data name="button_start.Size" type="System.Drawing.Size, System.Drawing">
     <value>96, 24</value>
   </data>
-  <data name="button_start.TabIndex" type="System.Int32, System.Private.CoreLib">
+  <data name="button_start.TabIndex" type="System.Int32, mscorlib">
     <value>2</value>
   </data>
   <data name="button_start.Text" xml:space="preserve">
@@ -106,7 +106,7 @@
     <value>button_start</value>
   </data>
   <data name="&gt;&gt;button_start.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Button, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    <value>System.Windows.Forms.Button, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;button_start.Parent" xml:space="preserve">
     <value>$this</value>
@@ -114,49 +114,19 @@
   <data name="&gt;&gt;button_start.ZOrder" xml:space="preserve">
     <value>3</value>
   </data>
-  <data name="label_message.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
-    <value>Bottom, Left, Right</value>
-  </data>
-  <data name="label_message.Location" type="System.Drawing.Point, System.Drawing.Primitives">
-    <value>8, 80</value>
-  </data>
-  <data name="label_message.Padding" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>4, 4, 4, 4</value>
-  </data>
-  <data name="label_message.Size" type="System.Drawing.Size, System.Drawing.Primitives">
-    <value>480, 120</value>
-  </data>
-  <data name="label_message.TabIndex" type="System.Int32, System.Private.CoreLib">
-    <value>0</value>
-  </data>
-  <data name="label_message.Text" xml:space="preserve">
-    <value>message</value>
-  </data>
-  <data name="&gt;&gt;label_message.Name" xml:space="preserve">
-    <value>label_message</value>
-  </data>
-  <data name="&gt;&gt;label_message.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;label_message.Parent" xml:space="preserve">
-    <value>$this</value>
-  </data>
-  <data name="&gt;&gt;label_message.ZOrder" xml:space="preserve">
-    <value>2</value>
-  </data>
   <data name="label_Progress.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>Bottom, Left</value>
   </data>
-  <data name="label_Progress.AutoSize" type="System.Boolean, System.Private.CoreLib">
+  <data name="label_Progress.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
-  <data name="label_Progress.Location" type="System.Drawing.Point, System.Drawing.Primitives">
+  <data name="label_Progress.Location" type="System.Drawing.Point, System.Drawing">
     <value>8, 232</value>
   </data>
-  <data name="label_Progress.Size" type="System.Drawing.Size, System.Drawing.Primitives">
+  <data name="label_Progress.Size" type="System.Drawing.Size, System.Drawing">
     <value>52, 15</value>
   </data>
-  <data name="label_Progress.TabIndex" type="System.Int32, System.Private.CoreLib">
+  <data name="label_Progress.TabIndex" type="System.Int32, mscorlib">
     <value>3</value>
   </data>
   <data name="label_Progress.Text" xml:space="preserve">
@@ -166,55 +136,81 @@
     <value>label_Progress</value>
   </data>
   <data name="&gt;&gt;label_Progress.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;label_Progress.Parent" xml:space="preserve">
     <value>$this</value>
   </data>
   <data name="&gt;&gt;label_Progress.ZOrder" xml:space="preserve">
-    <value>1</value>
+    <value>2</value>
   </data>
   <data name="pictureBox.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>Top, Bottom, Left, Right</value>
   </data>
-  <data name="pictureBox.Location" type="System.Drawing.Point, System.Drawing.Primitives">
+  <data name="pictureBox.Location" type="System.Drawing.Point, System.Drawing">
     <value>8, 8</value>
   </data>
-  <data name="pictureBox.Size" type="System.Drawing.Size, System.Drawing.Primitives">
+  <data name="pictureBox.Size" type="System.Drawing.Size, System.Drawing">
     <value>480, 64</value>
   </data>
   <data name="pictureBox.SizeMode" type="System.Windows.Forms.PictureBoxSizeMode, System.Windows.Forms">
     <value>AutoSize</value>
   </data>
-  <data name="pictureBox.TabIndex" type="System.Int32, System.Private.CoreLib">
+  <data name="pictureBox.TabIndex" type="System.Int32, mscorlib">
     <value>4</value>
   </data>
   <data name="&gt;&gt;pictureBox.Name" xml:space="preserve">
     <value>pictureBox</value>
   </data>
   <data name="&gt;&gt;pictureBox.Type" xml:space="preserve">
-    <value>System.Windows.Forms.PictureBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    <value>System.Windows.Forms.PictureBox, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;pictureBox.Parent" xml:space="preserve">
     <value>$this</value>
   </data>
   <data name="&gt;&gt;pictureBox.ZOrder" xml:space="preserve">
+    <value>1</value>
+  </data>
+  <data name="labelMessage.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Bottom, Left, Right</value>
+  </data>
+  <data name="labelMessage.Location" type="System.Drawing.Point, System.Drawing">
+    <value>8, 80</value>
+  </data>
+  <data name="labelMessage.Size" type="System.Drawing.Size, System.Drawing">
+    <value>480, 120</value>
+  </data>
+  <data name="labelMessage.TabIndex" type="System.Int32, mscorlib">
+    <value>6</value>
+  </data>
+  <data name="labelMessage.Text" xml:space="preserve">
+    <value>message</value>
+  </data>
+  <data name="&gt;&gt;labelMessage.Name" xml:space="preserve">
+    <value>labelMessage</value>
+  </data>
+  <data name="&gt;&gt;labelMessage.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;labelMessage.Parent" xml:space="preserve">
+    <value>$this</value>
+  </data>
+  <data name="&gt;&gt;labelMessage.ZOrder" xml:space="preserve">
     <value>0</value>
   </data>
-  <metadata name="$this.Localizable" type="System.Boolean, System.Private.CoreLib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e">
+  <metadata name="$this.Localizable" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
     <value>True</value>
   </metadata>
-  <data name="$this.AutoScaleDimensions" type="System.Drawing.SizeF, System.Drawing.Primitives">
+  <data name="$this.AutoScaleDimensions" type="System.Drawing.SizeF, System.Drawing">
     <value>7, 15</value>
   </data>
-  <data name="$this.AutoSize" type="System.Boolean, System.Private.CoreLib">
+  <data name="$this.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
-  <data name="$this.ClientSize" type="System.Drawing.Size, System.Drawing.Primitives">
+  <data name="$this.ClientSize" type="System.Drawing.Size, System.Drawing">
     <value>496, 281</value>
   </data>
-  <assembly alias="System.Drawing.Common" name="System.Drawing.Common, Version=4.0.2.2, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51" />
-  <data name="$this.Icon" type="System.Drawing.Icon, System.Drawing.Common" mimetype="application/x-microsoft.net.object.bytearray.base64">
+  <data name="$this.Icon" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
         AAABAAMAQEAAAAEAIAAoQgAANgAAACAgAAABACAAqBAAAF5CAAAQEAAAAQAgAGgEAAAGUwAAKAAAAEAA
         AACAAAAAAQAgAAAAAAAAQgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
@@ -596,9 +592,9 @@
     <value>Updator</value>
   </data>
   <data name="&gt;&gt;$this.Name" xml:space="preserve">
-    <value>Form_Patch</value>
+    <value>FormPatch</value>
   </data>
   <data name="&gt;&gt;$this.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Form, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    <value>System.Windows.Forms.Form, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
 </root>

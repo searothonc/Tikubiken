@@ -61,11 +61,38 @@ namespace Tikubiken.Properties {
         }
         
         /// <summary>
+        ///   &amp;Cancel に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        internal static string btntext_Cancel {
+            get {
+                return ResourceManager.GetString("btntext_Cancel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   &amp;Start に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        internal static string btntext_Start {
+            get {
+                return ResourceManager.GetString("btntext_Start", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Executable files (*.exe)|*.exe|TBP files (*.tbp)|*.tbp|All files (*.*)|*.* に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        internal static string ofd_out_filter {
+            get {
+                return ResourceManager.GetString("ofd_out_filter", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   XML files (*.xml)|*.xml|All files (*.*)|*.* に類似しているローカライズされた文字列を検索します。
         /// </summary>
-        internal static string ofd_filter {
+        internal static string ofd_src_filter {
             get {
-                return ResourceManager.GetString("ofd_filter", resourceCulture);
+                return ResourceManager.GetString("ofd_src_filter", resourceCulture);
             }
         }
     }

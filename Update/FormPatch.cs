@@ -11,9 +11,9 @@ using System.IO;
 
 namespace Tikubiken
 {
-	public partial class Form_Patch : Form
+	public partial class FormPatch : Form
 	{
-		public Form_Patch()
+		public FormPatch()
 		{
 			InitializeComponent();
 		}
@@ -86,7 +86,7 @@ namespace Tikubiken
 			{
 				MessageBox.Show(err.Message, "Error");
 			}
-			this.label_message.Text = filename + Environment.NewLine + text;
+			this.labelMessage.Text = filename + Environment.NewLine + text;
 
 			filename = @"E:\skyro\VisualStudio\source\repos\Tikubiken\images\\Update.exe";
 			totalsize = 85578608;
@@ -119,7 +119,7 @@ namespace Tikubiken
 			}
 		}
 
-		private void Form_Patch_Load(object sender, EventArgs e)
+		private void FormPatch_Load(object sender, EventArgs e)
 		{
 			this.pictureBox.Image = System.Drawing.Image.FromFile(@"E:\skyro\Dropbox\Searothonc\SG001A1\英語版withHabisain\tikubiken\cover_images\cover-640x160-jp.png");
 		}
