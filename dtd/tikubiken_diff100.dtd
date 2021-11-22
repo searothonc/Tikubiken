@@ -1,108 +1,105 @@
-<!DOCTYPE Tikubiken [
-<!--############################################################---
-<---	Tikubiken diff XML definition
-<---	Version 1.00
-<---	2021-10-30
-<---	Copyright (c) Searothonc
-<---############################################################-->
-
-<!--============================================================---
-<---	<Tikubiken>
-<---============================================================-->
-<!ELEMENT Tikubiken	(updater?, patch*, install+) >
-<!ATTLIST Tikubiken	version CDATA #IMPLIED "1.00" >
-<!ATTLIST Tikubiken	format CDATA #FIXED "diff" >
-
-
-<!--======================================================================---
-<---	<updater>
-<---======================================================================-->
-<!ELEMENT updater	(cover?|title*) >
-
-<!-- ---------------------------------------- ---
-<---	<cover>
-<--- ---------------------------------------- -->
-<!ELEMENT cover	EMPTY>
-<!ATTLIST cover image	CDATA #REQUIRED>
-<!ATTLIST cover lang	CDATA #IMPLIED>
-
-<!-- ---------------------------------------- ---
-<---	<title>
-<--- ---------------------------------------- -->
-<!ELEMENT title	EMPTY>
-<!ATTLIST title text	CDATA #REQUIRED>
-<!ATTLIST title lang	CDATA #IMPLIED><!-- IETF language tag RFC 5646 -->
-
-
-<!--======================================================================---
-<---	<patch>
-<---======================================================================-->
-<!ELEMENT patch	(branch,target) >
-<!ATTLIST patch version	ID		#REQUIRED>
-
-<!-- ---------------------------------------- ---
-<---	<branch>
-<--- ---------------------------------------- -->
-<!ELEMENT branch	exclude*>
-<!ATTLIST branch path	CDATA #REQUIRED>
-
-<!-- ---------------------------------------- ---
-<---	<target>
-<--- ---------------------------------------- -->
-<!ELEMENT target	*>
-<!ATTLIST target path	CDATA #REQUIRED>
-
-<!-- ---------------------------------------- ---
-<---	<exclude>
-<--- ---------------------------------------- -->
-<!ELEMENT exclude	EMPTY>
-<!ATTLIST exclude path	CDATA #REQUIRED>
-
-
-<!--======================================================================---
-<---	<install>
-<---======================================================================-->
-<!ELEMENT install	(registry?, identity+) >
-
-<!-- ---------------------------------------- ---
-<---	<registry>
-<--- ---------------------------------------- -->
-<!ELEMENT registry	EMPTY>
-<!ATTLIST install root		(HKEY_CLASSES_ROOT|HKEY_CURRENT_USER|HKEY_LOCAL_MACHINE|HKEY_USERS|HKEY_USERS|HKCR|HKCU|HKLM|HKU|HKCC) #REQUIRED>
-<!ATTLIST install subkey	CDATA #REQUIRED>
-<!ATTLIST install value		CDATA #REQUIRED>
-
-
-<!--======================================================================---
-<---	<identity>
-<---======================================================================-->
-<!ELEMENT identity	((patch|patchref), message?) >
-<!ATTLIST identity path		CDATA #REQUIRED>
-<!ATTLIST identity method	(MD5|SHA1) SHA1>
-
-<!-- ---------------------------------------- ---
-<---	<patchref>
-<--- ---------------------------------------- -->
-<!ELEMENT patchref EMPTY>
-<!ATTLIST install version	IDREF #REQUIRED>
-
-
-<!--======================================================================---
-<---	<message>
-<---======================================================================-->
-<!ELEMENT message	(text*)>
-
-<!-- ---------------------------------------- ---
-<---	<text>
-<--- ---------------------------------------- -->
-<!ELEMENT text (#PCDATA|br)*>
-<!ATTLIST text lang	NMTOKEN #IMPLIED><!-- IETF language tag RFC 5646 -->
-<!ATTLIST text type	(ready|process|complete|error|err_misplace) ready>
-
-<!-- ---------------------------------------- ---
-<---	<br/>
-<--- ---------------------------------------- -->
-<!ELEMENT br	EMPTY>
-
+<?xml version="1.0" encoding="UTF-8" ?>
 <!--############################################################-->
-]>
+<!--  Tikubiken diff XML definition                             -->
+<!--  Version 1.00                                              -->
+<!--  2021-10-30                                                -->
+<!--  Copyright (c) Searothonc                                  -->
+<!--############################################################-->
+
+<!--////////////////////////////////////////////////////////////-->
+<!--  <Tikubiken>                                               -->
+<!--////////////////////////////////////////////////////////////-->
+<!ELEMENT Tikubiken (updater?, patch*, install+) >
+<!ATTLIST Tikubiken version (1.00) #IMPLIED >
+<!ATTLIST Tikubiken format  CDATA #FIXED "diff" >
+
+
+<!--////////////////////////////////////////////////////////////-->
+<!--  <updater>                                                 -->
+<!--////////////////////////////////////////////////////////////-->
+<!ELEMENT updater (cover?|title*) >
+
+<!--==============================-->
+<!--  <cover>                     -->
+<!--==============================-->
+<!ELEMENT cover EMPTY>
+<!ATTLIST cover image CDATA #REQUIRED>
+<!ATTLIST cover lang  CDATA #IMPLIED>
+
+<!--==============================-->
+<!--  <title>                     -->
+<!--==============================-->
+<!ELEMENT title EMPTY>
+<!ATTLIST title text  CDATA #REQUIRED>
+<!ATTLIST title lang  CDATA #IMPLIED><!-- IETF language tag RFC 5646 -->
+
+
+<!--////////////////////////////////////////////////////////////-->
+<!--  <patch>                                                   -->
+<!--////////////////////////////////////////////////////////////-->
+<!ELEMENT patch (branch,target) >
+<!ATTLIST patch version ID    #REQUIRED>
+
+<!--==============================-->
+<!--  <branch>                    -->
+<!--==============================-->
+<!ELEMENT branch  (exclude)*>
+<!ATTLIST branch path CDATA #REQUIRED>
+
+<!--==============================-->
+<!--  <target>                    -->
+<!--==============================-->
+<!ELEMENT target  (exclude)*>
+<!ATTLIST target path CDATA #REQUIRED>
+
+<!--==============================-->
+<!--  <exclude>                   -->
+<!--==============================-->
+<!ELEMENT exclude EMPTY>
+<!ATTLIST exclude path  CDATA #REQUIRED>
+
+
+<!--////////////////////////////////////////////////////////////-->
+<!--  <install>                                                 -->
+<!--////////////////////////////////////////////////////////////-->
+<!ELEMENT install (registry?, identity+) >
+
+<!--==============================-->
+<!--  <registry>                  -->
+<!--==============================-->
+<!ELEMENT registry  EMPTY>
+<!ATTLIST install root    (HKEY_CLASSES_ROOT|HKEY_CURRENT_USER|HKEY_LOCAL_MACHINE|HKEY_USERS|HKCR|HKCU|HKLM|HKU|HKCC) #REQUIRED>
+<!ATTLIST install subkey  CDATA #REQUIRED>
+<!ATTLIST install value   CDATA #REQUIRED>
+
+
+<!--////////////////////////////////////////////////////////////-->
+<!--  <identity>                                                -->
+<!--////////////////////////////////////////////////////////////-->
+<!ELEMENT identity  ((patch|patchref), message?) >
+<!ATTLIST identity path   CDATA #REQUIRED>
+<!ATTLIST identity method (MD5|SHA1) "SHA1">
+
+<!--==============================-->
+<!--  <patchref>                  -->
+<!--==============================-->
+<!ELEMENT patchref EMPTY>
+<!ATTLIST install version IDREF #REQUIRED>
+
+
+<!--////////////////////////////////////////////////////////////-->
+<!--  <message>                                                 -->
+<!--////////////////////////////////////////////////////////////-->
+<!ELEMENT message (text*)>
+
+<!--==============================-->
+<!--  <text>                      -->
+<!--==============================-->
+<!ELEMENT text (#PCDATA|br)*>
+<!ATTLIST text lang NMTOKEN #IMPLIED><!-- IETF language tag RFC 5646 -->
+<!ATTLIST text type (ready|process|complete|error|err_misplace) "ready">
+
+<!--==============================-->
+<!--  <br/>                       -->
+<!--==============================-->
+<!ELEMENT br  EMPTY>
