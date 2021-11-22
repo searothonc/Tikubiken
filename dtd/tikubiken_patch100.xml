@@ -9,15 +9,15 @@
 <!--======================================================================---
 <---	<Tikubiken>
 <---======================================================================-->
-<!ELEMENT Tikubiken	(updator?, patch*, install+) >
+<!ELEMENT Tikubiken	(updater?, patch*, install+) >
 <!ATTLIST Tikubiken	version CDATA #IMPLIED "1.00" >
 <!ATTLIST Tikubiken format	CDATA #FIXED "patch" >
 
 
 <!--======================================================================---
-<---	<updator>
+<---	<updater>
 <---======================================================================-->
-<!ELEMENT updator	(cover?|title*) >
+<!ELEMENT updater	(cover?|title*) >
 
 <!-- ---------------------------------------- ---
 <---	<cover>
