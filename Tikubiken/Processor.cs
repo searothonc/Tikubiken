@@ -4,14 +4,29 @@
  * Copyright (c) 2021 Searothonc
 \* ********************************************************************** */
 using System;
+using System.IO;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Xml;
+using System.Xml.Linq;
+using System.Reflection;
 
 namespace Tikubiken
 {
 	public sealed class Processor : IDisposable
 	{
+		//--------------------------------------------------------
+		// Constants
+		//--------------------------------------------------------
+
+		// line break sugar
+		private static string lineBreak => System.Environment.NewLine;
+
+		// Resource names
+		private const string ridDTD = "Tikubiken.Resources.tikubiken_diff100.dtd";
+
 		//============================================================
 		// Inner class: ProgressState
 		//============================================================
@@ -57,6 +72,96 @@ namespace Tikubiken
 		}
 
 		//============================================================
+		// Batch operation
+		//============================================================
+
+		/// <summary>Container to store file operations</summary>
+		private class Batch
+		{
+			public enum Op
+			{
+				None,
+				CopyFile,
+			}
+
+			// Fields
+			//------------------------------
+			private FileSystemInfo	fsiFrom;
+			private FileSystemInfo	fsiTo;
+
+			// Properties
+			//------------------------------
+			public Op				Operation	{ get; protected set; }
+			public FileInfo			FileFrom	{ get => fsiFrom as FileInfo;		set => fsiFrom = value; }
+			public FileInfo			FileTo		{ get => fsiTo   as FileInfo;		set => fsiTo   = value; }
+			public DirectoryInfo	DirFrom		{ get => fsiFrom as DirectoryInfo;	set => fsiFrom = value; }
+			public DirectoryInfo	DirTo		{ get => fsiTo   as DirectoryInfo;	set => fsiTo   = value; }
+
+			// Constructtors
+			//------------------------------
+			public Batch(FileInfo from, FileInfo to) => (fsiFrom,fsiTo,Operation) = (from,to,Op.CopyFile);
+		}
+
+
+		//============================================================
+		// User exceptions
+		//============================================================
+
+		/// <summary>Base for user exception sub-classes in this class</summary>
+		public class Error : System.Exception
+		{
+			public Error() : base() {}
+			public Error(String s) : base(s) {}
+			//public Error(SerializationInfo si, StreamingContext sc) : base(si,sc) {}
+			public Error(String s, Exception e) : base(s,e) {}
+		}
+
+		/// <summary>Validation error</summary>
+		/// <remarks>Also a wrapper class of XmlSchemaException.</summary>
+		public class ErrorValidationFailed : Error
+		{
+			public string File { protected set; get; }
+			public ErrorValidationFailed(System.Xml.Schema.XmlSchemaException e, string file) : base("An error found in validaing XML document",e)
+			{
+				this.File = file;
+			}
+			public override string ToString()
+			{
+				System.Xml.Schema.XmlSchemaException e = (System.Xml.Schema.XmlSchemaException)this.InnerException;
+				return					$"[{this.Message}]" +
+					$"{lineBreak}" +	$"{e.Message}" + 
+					$"{lineBreak}" +	$"in Line {e.LineNumber}, Position {e.LinePosition} of \x22{this.File}\x22" +
+					#if DEBUG
+					$"{lineBreak}" +	$"Source:{e.Source}" +
+					$"{lineBreak}" +	$"SourceUri:{e.SourceUri}" +
+					$"{lineBreak}" +	$"SourceSchemaObject:{e.SourceSchemaObject}" +
+					#endif
+					 "";
+			}
+		}
+
+		/// <summary>Miscellaneous XML errors</summary>
+		/// <remarks>Also a wrapper class of XmlException.</summary>
+		public class ErrorXmlException : Error
+		{
+			public ErrorXmlException(XmlException e) : base("An exception occured in parsing XML document",e) {}
+			public override string ToString()
+			{
+				XmlException e = (XmlException)this.InnerException;
+				return					$"[{this.Message}]" +
+					$"{lineBreak}" +	$"{e.Message}" + 
+					$"{lineBreak}" +	$"in {e.SourceUri}." + 
+					 "";
+			}
+		}
+
+		/// <summary>Error in analysis of XML data and file structure</summary>
+		public class ErrorAnalysis : Error
+		{
+		}
+
+
+		//============================================================
 		// Body of Processor class
 		//============================================================
 
@@ -64,22 +169,31 @@ namespace Tikubiken
 		// Fields
 		//--------------------------------------------------------
 
+		// URI for DTD
+		private readonly Uri uriDTD = new Uri("http://raw.githubusercontent.com/searothonc/Tikubiken/master/dtd/tikubiken_diff100.dtd");
+
 		// Progress<T>
 		private IProgress<ProgressState>	m_progress;
 
 		// CancellationTokenSource for asyncronous processing
 		private CancellationTokenSource		ctSource;
 
-		/// <summary>Progress state</summary>
-		public ProgressState CurrentProgress;
+		// Progress state
+		private ProgressState				currentProgress;
+
+		// Temporary directory
+		private DirectoryInfo				dirTmp;
+
+		// Work(output image) directory
+		private DirectoryInfo				dirWork;
 
 		//--------------------------------------------------------
 		// Properties
 		//--------------------------------------------------------
 
 		// File paths
-		public string SourceXML		{ private set; get; }
-		public string OutputFile	{ private set; get; }
+		public FileInfo fiSourceXML	{ private set; get; }
+		public FileInfo fiOutput	{ private set; get; }
 
 		//--------------------------------------------------------
 		// Constructors
@@ -91,7 +205,8 @@ namespace Tikubiken
 		/// </param>
 		public Processor(Action<ProgressState> handler)
 		{
-			//m_progress = null;
+			//m_progress	= null;
+			//dirTmp		= null;
 
 			// Initialyze Progress<T> and state container
 			InitProgressState(handler);
@@ -108,11 +223,11 @@ namespace Tikubiken
 		private void InitProgressState(Action<ProgressState> handler)
 		{
 			m_progress = new Progress<ProgressState>(handler);
-			CurrentProgress.Usage	= ProgressState.Op.None;
-			CurrentProgress.Min		= 0;
-			CurrentProgress.Max		= 100;
-			CurrentProgress.Value	= 0;
-			CurrentProgress.Text	= "";
+			currentProgress.Usage	= ProgressState.Op.None;
+			currentProgress.Min		= 0;
+			currentProgress.Max		= 200;
+			currentProgress.Value	= 0;
+			currentProgress.Text	= "";
 		}
 
 		///	<summary>Dispose objects</summary>
@@ -126,16 +241,114 @@ namespace Tikubiken
 			ctSource = null;
 
 			// for this class itself
-			// delete all files under temporary directory
+			DeleteTemporaryDirectory();
+		}
+
+		//--------------------------------------------------------
+		// Sync task done bofore async
+		//--------------------------------------------------------
+
+		/// <summary>Operations having to be done before async task</summary>
+		///	<returns>(int)Maximum value of progress range.</returns>
+		public int Ready( string sourceXML, string outputPath )
+		{
+			// FileInfo for input and output file
+			fiSourceXML = new FileInfo(sourceXML);
+			fiOutput = new FileInfo(outputPath);
+
+			// Check if input XML file exists
+			if ( !fiSourceXML.Exists ) throw new FileNotFoundException(null,sourceXML);
+
+			// Create work directory
+			dirWork = dirTmp.CreateSubdirectory(Path.GetFileNameWithoutExtension(fiOutput.Name));
+
+			CreateTemporaryDirectory();
+			LoadXML();
+
+			// Maximum value of progress range
+			return currentProgress.Max;
+		}
+
+		// Create temprary directory that has unique path name
+		void CreateTemporaryDirectory()
+		{
+			if ( dirTmp != null ) DeleteTemporaryDirectory();
+
+			string path = Path.GetTempFileName();
+			File.Delete(path);		// GetTempFileName() creates temporary file
+
+			// Create directory info and actual directory of unique temporary name.
+			dirTmp = new DirectoryInfo(path);
+			dirTmp.Create();
+		}
+
+		// Delete temporary directory and all its contents
+		void DeleteTemporaryDirectory()
+		{
+			if ( dirTmp == null ) return;
+			if ( dirTmp.Exists ) dirTmp.Delete(true);	// Delete directory with all its contents
+			dirTmp = null;
+		}
+
+		// Loading source XML
+		void LoadXML()
+		{
+			// Assembly currently running
+			var asm = Assembly.GetExecutingAssembly();
+
+			# if DEBUG
+			// アセンブリに埋め込まれているすべてのリソースの論理名を取得して表示する
+			foreach (var _rname in asm.GetManifestResourceNames()) {
+				Debug.WriteLine(_rname);
+			}
+			#endif
+
+			// Settings for XML Reader
+			var settings = new XmlReaderSettings();
+			settings.DtdProcessing					= DtdProcessing .Parse;
+			settings.IgnoreComments					= true;
+			settings.IgnoreProcessingInstructions	= true;
+			settings.IgnoreWhitespace				= true;
+			//settings.LineNumberOffset				= 1;
+			//settings.LinePositionOffset				= 1;
+			settings.ValidationType					= ValidationType.DTD;
+
+			using ( var streamXML = fiSourceXML.OpenRead() )
+			{
+				using ( var streamDTD = asm.GetManifestResourceStream(ridDTD) )
+				{
+					if ( streamDTD == null ) throw new ArgumentNullException();
+
+					// In order to skip download DTD from URL,
+					// create resolver from same file in resource.
+					var resolver = new System.Xml.Resolvers.XmlPreloadedResolver();
+					resolver.Add(uriDTD, streamDTD);
+					settings.XmlResolver = resolver;
+
+					try
+					{
+						// Load XML document
+						var doc = XDocument.Load( XmlReader.Create(streamXML, settings) );
+					}
+					// Error found in validating by DTD throws System.Xml.Schema.XmlSchemaException
+					catch (System.Xml.Schema.XmlSchemaException e)
+					{
+						// Replace with user exception
+						throw new ErrorValidationFailed(e,fiSourceXML.FullName);
+					}
+					// Wrong DTD and other errors before validation throws XmlException
+					catch (XmlException e)
+					{
+						// Replace with user exception
+						throw new ErrorXmlException(e);
+					}
+				}
+			}
 		}
 
 		//--------------------------------------------------------
 		// Async task: public
 		//--------------------------------------------------------
-
-		public void Ready()
-		{
-		}
 
 		///	<summary>
 		///	Entry point of async task
@@ -208,30 +421,30 @@ namespace Tikubiken
 
 		private void Report(string text)
 		{
-			CurrentProgress.Text	= text;
-			CurrentProgress.Usage	= ProgressState.Op.Log;
+			currentProgress.Text	= text;
+			currentProgress.Usage	= ProgressState.Op.Log;
 			PostReport();
 		}
 
 		private void Report(int value)
 		{
-			CurrentProgress.Value	= value;
-			CurrentProgress.Usage	= ProgressState.Op.Progress;
+			currentProgress.Value	= value;
+			currentProgress.Usage	= ProgressState.Op.Progress;
 			PostReport();
 		}
 
 		private void Report(string text, int value)
 		{
-			CurrentProgress.Text	= text;
-			CurrentProgress.Value	= value;
-			CurrentProgress.Usage	= ProgressState.Op.Both;
+			currentProgress.Text	= text;
+			currentProgress.Value	= value;
+			currentProgress.Usage	= ProgressState.Op.Both;
 			PostReport();
 		}
 
 		private void PostReport()
 		{
 			if ( m_progress == null ) return;
-			m_progress.Report(CurrentProgress);
+			m_progress.Report(currentProgress);
 		}
 
 		//--------------------------------------------------------
@@ -246,7 +459,7 @@ namespace Tikubiken
 				int s = i+1;
 				Report( $"{s} seconds" );			// log 1 second past
 			}
-			Report( CurrentProgress.Max );			// progress completion
+			Report( currentProgress.Max );			// progress completion
 			Thread.Sleep(500);		// 0.5 seconds
 		}
 
@@ -258,8 +471,37 @@ namespace Tikubiken
 				Thread.Sleep(100);		// 0.1 seconds
 				// check cancellation every 0.1 seconds
 				ThrowIfCancellationRequested();
-				Report( CurrentProgress.Value + 1 );	// progress 1 tick
+				Report( currentProgress.Value + 1 );	// progress 1 tick
 			}
 		}
 	}
 }
+/*
+Linq to XML (XDocument) でエンティティ宣言されたものを使う | La Verda Luno
+https://blog.masuqat.net/2014/06/03/linq-to-xml-with-entity-declaration/
+XmlReader クラス (System.Xml) | Microsoft Docs
+https://docs.microsoft.com/ja-jp/dotnet/api/system.xml.xmlreader?view=net-6.0
+XDocument クラス (System.Xml.Linq) | Microsoft Docs
+https://docs.microsoft.com/ja-jp/dotnet/api/system.xml.linq.xdocument?view=net-6.0
+*/
+/*
+
+XML解析
+通読
+処理手順の再帰的コンテナクラス作成Batchとかでいい、zipでひとつにまとめる対象のワークディレクトリをひとつ作り、その中にファイルを配置する操作すべてを記録、coverとpatch.target/branchが対象、他のタグはデータだけなのでXMLドキュメントを最後に改変する
+updater.cover容量計算
+patch versionの唯一性確認
+patchref versionの参照可能性確認
+patch versionごとにフォルダ作成用データ作成→容量計算
+install.identityごとに容量計算
+
+Batchのコマンド
+ディレクトリ作成してワークノードを移動
+ファイルをコピー
+ファイルの差分を作成
+
+DirectoryInfo,FileInfoのメンバとbsdiffだけで作業が完了するように分解する
+指定の動作を実行するExec()メソッドを持つ
+
+プログレスバーはBatchオブジェクト全体の容量のみ、前処理、後処理は反映しないので、バーなしで作業→Batchでバーがのびる→100%状態で後処理(xml出力)
+*/

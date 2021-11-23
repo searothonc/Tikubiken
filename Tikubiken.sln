@@ -9,8 +9,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tikubiken", "Tikubiken\Tiku
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "dtd", "dtd", "{D54E502B-306A-49D9-898E-1F5D20F46B05}"
 	ProjectSection(SolutionItems) = preProject
-		dtd\tikubiken_diff100.xml = dtd\tikubiken_diff100.xml
-		dtd\tikubiken_patch100.xml = dtd\tikubiken_patch100.xml
+		dtd\tikubiken_diff100.dtd = dtd\tikubiken_diff100.dtd
+		dtd\tikubiken_patch100.dtd = dtd\tikubiken_patch100.dtd
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "dll", "dll", "{A8363D18-C5F1-47FD-8096-F8CD4F07589F}"

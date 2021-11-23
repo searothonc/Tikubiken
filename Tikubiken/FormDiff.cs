@@ -1,23 +1,14 @@
 ﻿#define DEBUG_LOG_TO_FILE
 
 using System;
-using System.IO;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Globalization;
-using System.Threading;
-using System.Threading.Tasks;
-using System.Windows.Forms;
 using System.Diagnostics;
+using System.IO;
+using System.Windows.Forms;
 using Tikubiken.Properties;
 
 namespace Tikubiken
 {
-	public partial class FormDiff : Form
+    public partial class FormDiff : Form
 	{
 		//------------------------------------------------------------
 		// Fields
@@ -207,32 +198,49 @@ namespace Tikubiken
 		{
 			if ( m_processor == null )
 			{
-Debug.WriteLine( "[Start] button" );
-				AddLogText( "[Start]" );
+				//Debug.WriteLine( "[Start] button" );
+
+				// Disable [Start] button first
+				DisableStartButton();
 
 				try
 				{
 					using ( m_processor = new Processor(OperateProgress) )
 					{
-						progressBar.Maximum = m_processor.CurrentProgress.Max = 200;
-							//await TestAsync();
-							SetupCancelButton();		// 必ずawait直前
-							await m_processor.RunAsync();
+						progressBar.Maximum = m_processor.Ready(
+								textBoxSource.Text,
+								textBoxOutput.Text
+							);
+
+						SetupCancelButton();
+						await m_processor.RunAsync();
 					}
 				}
-				//catch (OperationCanceledException) {}
-				catch { /* throw; */ }
+				catch (OperationCanceledException)
+				{
+					// The user intended to cancel processing.
+					// So the exception is simply discarded.
+				}
+				catch (Processor.Error pe)
+				{
+					// Show reason why the processor has aborted.
+					AddLogText( pe.ToString() );
+					AddLogText( "---Aborted---" );
+				}
+				catch (Exception exc)
+				{
+					// Any other exception caught shows the full information of trace.
+					AddLogText( exc.ToString() );
+				}
 				finally
 				{
 					m_processor = null;
-					AddLogText( "---Complete---" );
 					ResetUIElements();
 				}
 			}
 			else
 			{
-Debug.WriteLine( "[Cancel] button" );
-				AddLogText( "[Cancel]" );
+				//Debug.WriteLine( "[Cancel] button" );
 				CancelOperation();
 			}
 		}
@@ -243,6 +251,13 @@ Debug.WriteLine( "[Cancel] button" );
 			// Cancel only when cancellation token exists.
 			if ( m_processor == null ) return;
 			m_processor.Cancel();
+		}
+
+		// Reset UI elements
+		private void DisableStartButton()
+		{
+			SetEnable_UIs_filepath(false);
+			buttonStart.Enabled = false;
 		}
 
 		// Reset UI elements
@@ -263,10 +278,10 @@ Debug.WriteLine( "[Cancel] button" );
 			progressBar.Value = 0;
 		}
 
+		// Reflecting progress in the UIs
 		private void OperateProgress(Processor.ProgressState state)
 		{
-Debug.WriteLine( $"Usage = {state.Usage}" );
-
+			//Debug.WriteLine( $"Usage = {state.Usage}" );
 			if ( state.IsValueAvailable() )
 			{
 				progressBar.Value = state.Value;

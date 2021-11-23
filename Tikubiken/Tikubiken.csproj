@@ -18,8 +18,12 @@
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <DefineConstants>TRACE</DefineConstants>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
   </PropertyGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="..\dtd\tikubiken_diff100.dtd" Link="Resources\tikubiken_diff100.dtd" />
+  </ItemGroup>
 
   <ItemGroup>
     <Reference Include="bslib">
