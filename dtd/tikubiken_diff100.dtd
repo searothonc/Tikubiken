@@ -17,7 +17,7 @@
 <!--////////////////////////////////////////////////////////////-->
 <!--  <updater>                                                 -->
 <!--////////////////////////////////////////////////////////////-->
-<!ELEMENT updater (cover?|title*) >
+<!ELEMENT updater (cover|title)* >
 
 <!--==============================-->
 <!--  <cover>                     -->
@@ -68,9 +68,9 @@
 <!--  <registry>                  -->
 <!--==============================-->
 <!ELEMENT registry  EMPTY>
-<!ATTLIST install root    (HKEY_CLASSES_ROOT|HKEY_CURRENT_USER|HKEY_LOCAL_MACHINE|HKEY_USERS|HKCR|HKCU|HKLM|HKU|HKCC) #REQUIRED>
-<!ATTLIST install subkey  CDATA #REQUIRED>
-<!ATTLIST install value   CDATA #REQUIRED>
+<!ATTLIST registry root   (HKEY_CLASSES_ROOT|HKEY_CURRENT_USER|HKEY_LOCAL_MACHINE|HKEY_USERS|HKCR|HKCU|HKLM|HKU|HKCC) #REQUIRED>
+<!ATTLIST registry subkey CDATA #REQUIRED>
+<!ATTLIST registry value  CDATA #REQUIRED>
 
 
 <!--////////////////////////////////////////////////////////////-->
@@ -84,7 +84,7 @@
 <!--  <patchref>                  -->
 <!--==============================-->
 <!ELEMENT patchref EMPTY>
-<!ATTLIST install version IDREF #REQUIRED>
+<!ATTLIST patchref version IDREF #REQUIRED>
 
 
 <!--////////////////////////////////////////////////////////////-->
@@ -97,7 +97,7 @@
 <!--==============================-->
 <!ELEMENT text (#PCDATA|br)*>
 <!ATTLIST text lang NMTOKEN #IMPLIED><!-- IETF language tag RFC 5646 -->
-<!ATTLIST text type (ready|process|complete|error|err_misplace) "ready">
+<!ATTLIST text type (ready|process|complete|title|error|err_misplace) "ready">
 
 <!--==============================-->
 <!--  <br/>                       -->
