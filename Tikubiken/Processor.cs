@@ -11,6 +11,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Linq;
+using System.Linq;
 using System.Reflection;
 
 namespace Tikubiken
@@ -102,7 +103,6 @@ namespace Tikubiken
 			public Batch(FileInfo from, FileInfo to) => (fsiFrom,fsiTo,Operation) = (from,to,Op.CopyFile);
 		}
 
-
 		//============================================================
 		// User exceptions
 		//============================================================
@@ -114,6 +114,18 @@ namespace Tikubiken
 			public Error(String s) : base(s) {}
 			//public Error(SerializationInfo si, StreamingContext sc) : base(si,sc) {}
 			public Error(String s, Exception e) : base(s,e) {}
+
+			// Error messages
+			//------------------------------
+			// Just in case making multilingual and loading resources are needed one day.
+			public static string TypeValidation		= "An error found in validaing XML document";
+			public static string TypeException		= "An exception occured in parsing XML document";
+			public static string TypeAnalysis		= "An error found in analyzing source XML";
+
+			public static string Msg_DupLangNull	= "Duplication of the element with no \x22lang\x22 attribute is not allowed.";
+			public static string Msg_DupLangValue	= "Duplication of the element having the same value of the \x22lang\x22 attribute is not allowed.";
+			public static string Msg_DupNoRegistry	= "<install> element witout <registry> element is able to exist only 1 simaltaneously.";
+			public static string Msg_NoReferenceID	= "Referenced IDs do not exist.";
 		}
 
 		/// <summary>Validation error</summary>
@@ -121,7 +133,7 @@ namespace Tikubiken
 		public class ErrorValidationFailed : Error
 		{
 			public string File { protected set; get; }
-			public ErrorValidationFailed(System.Xml.Schema.XmlSchemaException e, string file) : base("An error found in validaing XML document",e)
+			public ErrorValidationFailed(System.Xml.Schema.XmlSchemaException e, string file) : base(TypeValidation,e)
 			{
 				this.File = file;
 			}
@@ -144,7 +156,7 @@ namespace Tikubiken
 		/// <remarks>Also a wrapper class of XmlException.</summary>
 		public class ErrorXmlException : Error
 		{
-			public ErrorXmlException(XmlException e) : base("An exception occured in parsing XML document",e) {}
+			public ErrorXmlException(XmlException e) : base(TypeException,e) {}
 			public override string ToString()
 			{
 				XmlException e = (XmlException)this.InnerException;
@@ -158,6 +170,15 @@ namespace Tikubiken
 		/// <summary>Error in analysis of XML data and file structure</summary>
 		public class ErrorAnalysis : Error
 		{
+			private string detailMessage;
+			public ErrorAnalysis(string s) : base(TypeAnalysis) => detailMessage = s;
+			public override string ToString()
+			{
+				XmlException e = (XmlException)this.InnerException;
+				return					$"[{this.Message}]" +
+					$"{lineBreak}" +	$"{detailMessage}" + 
+					 "";
+			}
 		}
 
 
@@ -186,6 +207,8 @@ namespace Tikubiken
 
 		// Work(output image) directory
 		private DirectoryInfo				dirWork;
+
+		private XDocument					xmlDoc;
 
 		//--------------------------------------------------------
 		// Properties
@@ -259,18 +282,20 @@ namespace Tikubiken
 			// Check if input XML file exists
 			if ( !fiSourceXML.Exists ) throw new FileNotFoundException(null,sourceXML);
 
-			// Create work directory
+			// Create temporary work directory
+			CreateTemporaryDirectory();
 			dirWork = dirTmp.CreateSubdirectory(Path.GetFileNameWithoutExtension(fiOutput.Name));
 
-			CreateTemporaryDirectory();
+			// Parse XML document
 			LoadXML();
+			ParseXML();
 
 			// Maximum value of progress range
 			return currentProgress.Max;
 		}
 
 		// Create temprary directory that has unique path name
-		void CreateTemporaryDirectory()
+		private void CreateTemporaryDirectory()
 		{
 			if ( dirTmp != null ) DeleteTemporaryDirectory();
 
@@ -283,7 +308,7 @@ namespace Tikubiken
 		}
 
 		// Delete temporary directory and all its contents
-		void DeleteTemporaryDirectory()
+		private void DeleteTemporaryDirectory()
 		{
 			if ( dirTmp == null ) return;
 			if ( dirTmp.Exists ) dirTmp.Delete(true);	// Delete directory with all its contents
@@ -291,7 +316,7 @@ namespace Tikubiken
 		}
 
 		// Loading source XML
-		void LoadXML()
+		private void LoadXML()
 		{
 			// Assembly currently running
 			var asm = Assembly.GetExecutingAssembly();
@@ -328,7 +353,7 @@ namespace Tikubiken
 					try
 					{
 						// Load XML document
-						var doc = XDocument.Load( XmlReader.Create(streamXML, settings) );
+						xmlDoc = XDocument.Load( XmlReader.Create(streamXML, settings), LoadOptions.SetLineInfo );
 					}
 					// Error found in validating by DTD throws System.Xml.Schema.XmlSchemaException
 					catch (System.Xml.Schema.XmlSchemaException e)
@@ -345,6 +370,153 @@ namespace Tikubiken
 				}
 			}
 		}
+
+		// Parse loaded source XML
+		private void ParseXML()
+		{
+			// Error checks in advance
+			ParseXML_DistinctAttribute_lang();
+			ParseXML_CheckDuplicateInstallPlacement();
+			//ParseXML_CheckPatchrefIDReference();	// already checked in DTD validaton
+
+/*
+			// /<Tikubiken>/<updater>/<cover> elements
+			var elm = doc.Element("updater");
+			ParseXML_AggregateCovers(elm);
+
+			// /<Tikubiken>//<patch> elements
+			elm = elm.ElementsAfterSelf;
+			ParseXML_AggregatePatches(elm);
+*/
+		}
+
+		// Ensure "lang" attributes are not duplicated.
+		private void ParseXML_DistinctAttribute_lang()
+		{
+			// "lang" attribute dupilication check
+			// for child elements of <updeter> element.
+			var elm = xmlDoc.Descendants("updater").First();
+			var target = elm.Descendants("title");
+			ParseXML_DistinctLanguages(target,"title");
+			target = elm.Descendants("cover");
+			ParseXML_DistinctLanguages(target,"cover");
+
+			// for child <text> elements of <message> elements.
+			foreach ( var elmMsg in xmlDoc.Descendants("message") )
+			{
+				var tx =
+					from e in elmMsg.Elements("text")
+					group e by e.Attribute("type") == null ? "" : e.Attribute("type").Value;
+				foreach ( var t in tx )
+				{
+					string key = t.Key.Length>0 ? $" type=\x22{t.Key}\x22" : "";
+					ParseXML_DistinctLanguages(t,$"text{key}");
+				}
+			}
+		}
+
+		// Check the dupurication of language attribute of the specified elements
+		private void ParseXML_DistinctLanguages(IEnumerable<XElement> target, string elmName)
+		{
+			// Duplicate elements with no lang attribute are not allowed.
+			var elms = 
+				from e in target
+				where e.Attribute("lang") == null
+				select e;
+			if ( elms.Count() > 1 )
+			{
+				string str = "";
+				var causes = 
+					from IXmlLineInfo info in elms 
+					where info.HasLineInfo() 
+					select $"{lineBreak}<{elmName}> in Line {info.LineNumber}, Position {info.LinePosition}";
+				foreach ( string s in causes ) { str += s; }
+				throw new ErrorAnalysis( Error.Msg_DupLangNull + str );
+			}
+
+			// Duplicate lang attributes having the same value.
+			var attvals = 
+				from elm in target
+				where elm.Attribute("lang") != null
+				select elm.Attribute("lang") into a
+				group a by a.Value into g
+				where g.Count() > 1
+				select g;
+			if ( attvals.Count() > 1 )
+			{
+				string key, str = "";
+				foreach ( var val in attvals )
+				{
+					key = val.Key;
+					var causes = 
+						from IXmlLineInfo info in val
+						where info.HasLineInfo() 
+						select $"{lineBreak}<{elmName} lang=\x22{key}\x22> in Line {info.LineNumber}, Position {info.LinePosition}";
+
+					foreach ( string s in causes ) { str += s; }
+				}
+				throw new ErrorAnalysis( Error.Msg_DupLangValue + str );
+			}
+		}
+
+		private void ParseXML_CheckDuplicateInstallPlacement()
+		{
+			var elms = 
+				from e in xmlDoc.Descendants("install")
+				where e.Element("registry") == null
+				select e;
+			if ( elms.Count() < 2 ) return;
+
+			var causes = 
+				from IXmlLineInfo info in elms
+				where info.HasLineInfo() 
+				select $"{lineBreak}<install> in Line {info.LineNumber}, Position {info.LinePosition}";
+
+			string str = "";
+			foreach ( string s in causes ) { str += s; }
+			throw new ErrorAnalysis( Error.Msg_DupNoRegistry + str );
+		}
+
+		private void ParseXML_CheckPatchrefIDReference()
+		{
+			// Extract IDs from <patch> element's "version" attribute defined to be required in DTD.
+			var idList = from e in xmlDoc.Descendants("patch") select e.Attribute("version").Value;
+
+			// Checku if <patchref> referencing "version"s exist in IDs above.
+			string str = "";
+			foreach ( var attr in (from e in xmlDoc.Descendants("patchref") select e.Attribute("version")) )
+			{
+				if ( idList.Contains(attr.Value) ) continue;
+				IXmlLineInfo info = attr as IXmlLineInfo;
+				str += $"{lineBreak}";
+				str += $"<patchref version=\x22{attr.Value}\x22> in Line {info.LineNumber}, Position {info.LinePosition}";
+			}
+			throw new ErrorAnalysis( Error.Msg_NoReferenceID + str );
+		}
+
+/*
+		// Aggregate <cover> elements
+		private void ParseXML_AggregateCovers(XElement updaterElement)
+		{
+			var covers = updaterElement.Descendants("cover");
+			ParseXML_DistinctLanguages(covers);
+
+			FileInfo from, to;
+			foreach ( XElement elm in covers )
+			{
+				//elm.Attribute("image").Values
+			}
+		}
+
+		// Aggregate <patch> elements
+		private void ParseXML_AggregatePatches()
+		{
+			//var pvers = from elm in xmlDoc.Descendants("patch") select elm.Attribute("version").Value;
+			//string str = "";
+			//foreach ( string an in pvers ) { str += an + lineBreak; }
+			//throw new Error(str);
+		}
+*/
 
 		//--------------------------------------------------------
 		// Async task: public
