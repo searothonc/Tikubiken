@@ -56,7 +56,8 @@
 <!--  <exclude>                   -->
 <!--==============================-->
 <!ELEMENT exclude EMPTY>
-<!ATTLIST exclude path  CDATA #REQUIRED>
+<!ATTLIST exclude path   CDATA #REQUIRED>
+<!ATTLIST exclude match  (exact|wildcard|regex) #REQUIRED "wildcard">
 
 
 <!--////////////////////////////////////////////////////////////-->
