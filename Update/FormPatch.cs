@@ -75,6 +75,12 @@ namespace Tikubiken
 			text += System.Environment.CurrentDirectory;
 			text += Environment.NewLine;
 
+			// .NET 6+
+			//text += "[System.Environment.ProcessPath]";
+			//text += Environment.NewLine;
+			//text += System.Environment.ProcessorCount;
+			//text += Environment.NewLine;
+
 			//string filename = Application.StartupPath;
 			string filename = @"E:\skyro\VisualStudio\source\repos\Tikubiken\images";
 			filename += "\\" + "log.txt";

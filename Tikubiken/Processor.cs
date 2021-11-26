@@ -13,6 +13,7 @@ using System.Xml;
 using System.Xml.Linq;
 using System.Linq;
 using System.Reflection;
+using System.Text.RegularExpressions;
 
 namespace Tikubiken
 {
@@ -82,6 +83,7 @@ namespace Tikubiken
 			public enum Op
 			{
 				None,
+				CreateDir,
 				CopyFile,
 			}
 
@@ -100,7 +102,12 @@ namespace Tikubiken
 
 			// Constructtors
 			//------------------------------
-			public Batch(FileInfo from, FileInfo to) => (fsiFrom,fsiTo,Operation) = (from,to,Op.CopyFile);
+
+			// Operation = create a directory
+			public Batch(DirectoryInfo dirCreate) => (fsiFrom,fsiTo,Operation) = (null,dirCreate,Op.CreateDir);
+
+			// Operation = copy a file
+			public Batch(FileInfo fileFrom, FileInfo fileTo) => (fsiFrom,fsiTo,Operation) = (fileFrom,fileTo,Op.CopyFile);
 		}
 
 		//============================================================
@@ -126,6 +133,8 @@ namespace Tikubiken
 			public static string Msg_DupLangValue	= "Duplication of the element having the same value of the \x22lang\x22 attribute is not allowed.";
 			public static string Msg_DupNoRegistry	= "<install> element witout <registry> element is able to exist only 1 simaltaneously.";
 			public static string Msg_NoReferenceID	= "Referenced IDs do not exist.";
+
+			public static string Msg_FileNotExists	= "File not exists.";
 		}
 
 		/// <summary>Validation error</summary>
@@ -208,15 +217,18 @@ namespace Tikubiken
 		// Work(output image) directory
 		private DirectoryInfo				dirWork;
 
+		// Working objects
 		private XDocument					xmlDoc;
+		private List<Batch>					listBatch;
 
 		//--------------------------------------------------------
 		// Properties
 		//--------------------------------------------------------
 
 		// File paths
-		public FileInfo fiSourceXML	{ private set; get; }
-		public FileInfo fiOutput	{ private set; get; }
+		public FileInfo fiSourceXML			{ private set; get; }
+		public DirectoryInfo diSourceXML	{ get => fiSourceXML.Directory; }
+		public FileInfo fiOutput			{ private set; get; }
 
 		//--------------------------------------------------------
 		// Constructors
@@ -288,6 +300,7 @@ namespace Tikubiken
 
 			// Parse XML document
 			LoadXML();
+			ErrorCheckXML();
 			ParseXML();
 
 			// Maximum value of progress range
@@ -371,35 +384,28 @@ namespace Tikubiken
 			}
 		}
 
-		// Parse loaded source XML
-		private void ParseXML()
+		//--------------------------------------------------------
+		// Sync task: XML error check
+		//--------------------------------------------------------
+
+		// Error check before parse XML
+		private void ErrorCheckXML()
 		{
-			// Error checks in advance
-			ParseXML_DistinctAttribute_lang();
-			ParseXML_CheckDuplicateInstallPlacement();
-			//ParseXML_CheckPatchrefIDReference();	// already checked in DTD validaton
-
-/*
-			// /<Tikubiken>/<updater>/<cover> elements
-			var elm = doc.Element("updater");
-			ParseXML_AggregateCovers(elm);
-
-			// /<Tikubiken>//<patch> elements
-			elm = elm.ElementsAfterSelf;
-			ParseXML_AggregatePatches(elm);
-*/
+			ErrorCheckXML_DistinctAttribute_lang();
+			ErrorCheckXML_CheckDuplicateInstallPlacement();
+			//ErrorCheckXML_CheckPatchrefIDReference();	// already checked in DTD validaton
 		}
 
 		// Ensure "lang" attributes are not duplicated.
-		private void ParseXML_DistinctAttribute_lang()
+		private void ErrorCheckXML_DistinctAttribute_lang()
 		{
 			// "lang" attribute dupilication check
 			// for child elements of <updeter> element.
 			var elm = xmlDoc.Descendants("updater").First();
 			var target = elm.Descendants("title");
-			ParseXML_DistinctLanguages(target,"title");
+			ErrorCheckXML_DistinctLanguages(target,"title");
 			target = elm.Descendants("cover");
-			ParseXML_DistinctLanguages(target,"cover");
+			ErrorCheckXML_DistinctLanguages(target,"cover");
 
 			// for child <text> elements of <message> elements.
 			foreach ( var elmMsg in xmlDoc.Descendants("message") )
@@ -410,13 +416,13 @@ namespace Tikubiken
 				foreach ( var t in tx )
 				{
 					string key = t.Key.Length>0 ? $" type=\x22{t.Key}\x22" : "";
-					ParseXML_DistinctLanguages(t,$"text{key}");
+					ErrorCheckXML_DistinctLanguages(t,$"text{key}");
 				}
 			}
 		}
 
 		// Check the dupurication of language attribute of the specified elements
-		private void ParseXML_DistinctLanguages(IEnumerable<XElement> target, string elmName)
+		private void ErrorCheckXML_DistinctLanguages(IEnumerable<XElement> target, string elmName)
 		{
 			// Duplicate elements with no lang attribute are not allowed.
 			var elms = 
@@ -459,7 +465,7 @@ namespace Tikubiken
 			}
 		}
 
-		private void ParseXML_CheckDuplicateInstallPlacement()
+		private void ErrorCheckXML_CheckDuplicateInstallPlacement()
 		{
 			var elms = 
 				from e in xmlDoc.Descendants("install")
@@ -477,7 +483,7 @@ namespace Tikubiken
 			throw new ErrorAnalysis( Error.Msg_DupNoRegistry + str );
 		}
 
-		private void ParseXML_CheckPatchrefIDReference()
+		private void ErrorCheckXML_CheckPatchrefIDReference()
 		{
 			// Extract IDs from <patch> element's "version" attribute defined to be required in DTD.
 			var idList = from e in xmlDoc.Descendants("patch") select e.Attribute("version").Value;
@@ -494,29 +500,108 @@ namespace Tikubiken
 			throw new ErrorAnalysis( Error.Msg_NoReferenceID + str );
 		}
 
-/*
-		// Aggregate <cover> elements
-		private void ParseXML_AggregateCovers(XElement updaterElement)
-		{
-			var covers = updaterElement.Descendants("cover");
-			ParseXML_DistinctLanguages(covers);
+		//--------------------------------------------------------
+		// Sync task: Parse XML
+		//--------------------------------------------------------
 
-			FileInfo from, to;
-			foreach ( XElement elm in covers )
+		// Parse loaded source XML
+		private void ParseXML()
+		{
+			listBatch = new List<Batch>();
+
+			// Image path from <cover> elements
+			ParseXML_AggregateCovers();
+
+			// Folders to take differences from <patch> elements
+			ParseXML_AggregatePatches();
+		}
+
+		// Aggregate <cover> elements
+		private void ParseXML_AggregateCovers()
+		{
+			var covers = 
+				from e in xmlDoc.Descendants("cover") 
+				select e.Attribute("image").Value;
+
+			FileInfo src, dst;
+			foreach ( string file in covers )
 			{
-				//elm.Attribute("image").Values
+				src = new FileInfo( Path.Join(diSourceXML.FullName, file) );
+				if ( !src.Exists ) throw new ErrorAnalysis( Error.Msg_FileNotExists + lineBreak + file );
+				dst = new FileInfo( Path.Join(dirWork.FullName, src.Name) );
+				listBatch.Add( new Batch(src,dst) );
 			}
 		}
 
 		// Aggregate <patch> elements
 		private void ParseXML_AggregatePatches()
 		{
-			//var pvers = from elm in xmlDoc.Descendants("patch") select elm.Attribute("version").Value;
-			//string str = "";
-			//foreach ( string an in pvers ) { str += an + lineBreak; }
-			//throw new Error(str);
+			// Go round all <patch> elements
+			foreach ( var elmPatch in xmlDoc.Descendants("patch") )
+			{
+				// Version ID
+				string strID = elmPatch.Attribute("version").Value;
+				DirectoryInfo dirResult = new DirectoryInfo($"{dirWork.FullName}\\{strID}");
+				listBatch.Add( new Batch(dirResult) );
+
+				// <branch> element
+				var elmBranch = elmPatch.Element("branch");
+				var strBranchPath = elmBranch.Attribute("path").Value;
+				var ignoreBranch = 
+					from e in elmBranch.Elements("exclude")
+					select ParseXML_PathToRegex(e);
+
+				// <target> element
+				var elmTarget = elmPatch.Element("target");
+				var strTargetPath = elmBranch.Attribute("path").Value;
+				var ignoreTarget = 
+					from e in elmTarget.Elements("exclude")
+					select ParseXML_PathToRegex(e);
+
+				// Differences of file structure between two directories.
+				ParseXML_CompareDirectory(dirResult, ".", strBranchPath, ignoreBranch,strTargetPath, ignoreTarget);
+			}
 		}
-*/
+
+		// Regex from path and match attribute
+		private Regex ParseXML_PathToRegex(XElement elm)
+		{
+			string path = elm.Attribute("path").Value;
+			string match = elm.Attribute("match").Value ?? "wildcard";
+
+			// "exact" and "regex" are not or least needed to convert.
+			if ( match != "regex" ) path = Regex.Escape(path);	// escape if "exact" or "wildcard"
+			if ( match != "wildcard" ) return new Regex(path);	// return if "exact" or "regex"
+
+			// Only "wildcard" needs conversion
+			path = path.Replace( @"\?", @"." );		// 1 letter match in wildcard '?' to regex '.'
+			path = path.Replace( @"\*", @".*" );	// sequence match in wildcard '*' to regex '.*'
+			return new Regex(path);
+		}
+
+		// Exclude path
+//		private bool ParseXML_MatchExcludePattern(string path, IEnumerable<Regex> exclusions)
+//			=> exclusions.Any( r => r.IsMatch(path) )
+
+		// Compare file structures between two directories.
+		private void ParseXML_CompareDirectory( DirectoryInfo dirResult, string relativePath, 
+									string branchBase, IEnumerable<Regex> branchesExclude, 
+									string targetBase, IEnumerable<Regex> targetsExclude )
+		{
+			DirectoryInfo dirBranch = new DirectoryInfo( Path.GetRelativePath(branchBase, relativePath) );
+			DirectoryInfo dirTarget = new DirectoryInfo( Path.GetRelativePath(targetBase, relativePath) );
+
+			// Enumerate in the directory of branch side.
+			IEnumerable<DirectoryInfo> dirBranches = 
+				from d in dirBranch.EnumerateDirectories()
+				where !branchesExclude.Any( r => r.IsMatch(d.Name) )
+				select d;
+
+			string s = "";
+			foreach ( var d in dirBranches ) { s += d.Name + $"{lineBreak}"; }
+			throw new Error(s);
+		}
+
 
 		//--------------------------------------------------------
 		// Async task: public
