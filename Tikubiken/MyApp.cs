@@ -15,6 +15,7 @@ using System.Text;
 using Sgry.Ini;
 using System.IO;
 using System.Windows.Forms;
+using System.Text.RegularExpressions;
 
 namespace Tikubiken
 {
@@ -33,11 +34,13 @@ namespace Tikubiken
 		//------------------------------------------------------------
 		// Properties
 		//------------------------------------------------------------
-		public string exeDir	{ get; }
-		public string iniPath	{ get; }
+		public string ExeDir	{ get; }
+		public string IniPath	{ get; }
 
-		public string lastDir	{ get; set; }
-		public string lastOut	{ get; set; }
+		public string CommandReportFile	{ get; protected set; }
+
+		public string LastDir	{ get; set; }
+		public string LastOut	{ get; set; }
 
 		//------------------------------------------------------------
 		// Constructors
@@ -45,11 +48,33 @@ namespace Tikubiken
 		public MyApp()
 		{
 			// Path name for .INI file
-			exeDir = System.Environment.CurrentDirectory;
-			iniPath = exeDir + Path.DirectorySeparatorChar + INI_name;
+			this.ExeDir = System.Environment.CurrentDirectory;
+			this.IniPath = this.ExeDir + Path.DirectorySeparatorChar + INI_name;
+
+			// Parse command line parameters
+			this.CommandReportFile = null;
+			ParseCommandLine();
 
 			// Load INI file
 			iniDoc = IniLoad();
+		}
+
+		//------------------------------------------------------------
+		// Command line
+		//------------------------------------------------------------
+		private void ParseCommandLine()
+		{
+			string[] args = Environment.GetCommandLineArgs();
+			for ( int i=1 ; i<args.Length ; ++i )
+			{
+				// RepoprtCmd option that report commands list in text file
+				if ( Regex.Match(args[i], @"^\/ReportCmd=").Success )
+				{
+					string path = args[i].Substring(11);
+					if ( path[1]!=':' ) path = Path.GetFullPath( Path.Join(this.ExeDir,path) );
+					this.CommandReportFile = path;
+				}
+			}
 		}
 
 		//------------------------------------------------------------
@@ -64,7 +89,7 @@ namespace Tikubiken
 			try
 			{
 				// Load INI data in a file
-				using( var file = new StreamReader(iniPath, Encoding.UTF8) )
+				using( var file = new StreamReader(this.IniPath, Encoding.UTF8) )
 				{
 					ini.Load( file );
 				}
@@ -72,8 +97,8 @@ namespace Tikubiken
 			catch {}	// エラーが出ても無視→読み込み失敗＝新規
 
 			// Retrieve values
-			lastDir = ini.Get( "Status", "LastDir", exeDir );
-			lastOut = ini.Get( "Status", "LastOut", exeDir );
+			this.LastDir = ini.Get( "Status", "LastDir", this.ExeDir );
+			this.LastOut = ini.Get( "Status", "LastOut", this.ExeDir );
 
 			// Returns document if succeed
 			return ini;
@@ -82,13 +107,13 @@ namespace Tikubiken
 		// Save to INI file
 		public void IniSave()
 		{
-			iniDoc.Set( "Status", "LastDir", lastDir );
-			iniDoc.Set( "Status", "LastOut", lastOut );
+			iniDoc.Set( "Status", "LastDir", this.LastDir );
+			iniDoc.Set( "Status", "LastOut", this.LastOut );
 
 			try
 			{
 
-				using(var file = new StreamWriter(iniPath, false, Encoding.UTF8) )
+				using(var file = new StreamWriter(this.IniPath, false, Encoding.UTF8) )
 				{
 					file.NewLine = Environment.NewLine;
 					iniDoc.Save( file );
