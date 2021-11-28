@@ -17,7 +17,19 @@
 <!--////////////////////////////////////////////////////////////-->
 <!--  <updater>                                                 -->
 <!--////////////////////////////////////////////////////////////-->
-<!ELEMENT updater (cover|title)* >
+<!ELEMENT updater (config|cover|title)* >
+
+<!--==============================-->
+<!--  <config>                     -->
+<!--==============================-->
+<!ELEMENT config option* >
+
+<!--==============================-->
+<!--  <config>                     -->
+<!--==============================-->
+<!ELEMENT option EMPTY>
+<!ATTLIST option name		(backup)						#REQUIRED>
+<!ATTLIST option value	(true|false|yes|no)	#REQUIRED>
 
 <!--==============================-->
 <!--  <cover>                     -->
