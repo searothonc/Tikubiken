@@ -28,8 +28,8 @@
 <!--  <config>                     -->
 <!--==============================-->
 <!ELEMENT option EMPTY>
-<!ATTLIST option name		(backup)						#REQUIRED>
-<!ATTLIST option value	(true|false|yes|no)	#REQUIRED>
+<!ATTLIST option name   (backup)            #REQUIRED>
+<!ATTLIST option value  (true|false|yes|no) #REQUIRED>
 
 <!--==============================-->
 <!--  <cover>                     -->
@@ -79,7 +79,7 @@
 <!ELEMENT identity  ((patch|patchref), message) >
 <!ATTLIST identity path   CDATA #REQUIRED>
 <!ATTLIST identity method (MD5|SHA1) "SHA1">
-<!ATTLIST identity value  CDATA #REQUIRED>
+<!ATTLIST identity hash   CDATA #REQUIRED>
 
 <!--==============================-->
 <!--  <patchref>                  -->

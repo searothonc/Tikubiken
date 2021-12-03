@@ -28,8 +28,8 @@
 <!--  <config>                     -->
 <!--==============================-->
 <!ELEMENT option EMPTY>
-<!ATTLIST option name		(backup)						#REQUIRED>
-<!ATTLIST option value	(true|false|yes|no)	#REQUIRED>
+<!ATTLIST option name   (backup)            #REQUIRED>
+<!ATTLIST option value  (true|false|yes|no) #REQUIRED>
 
 <!--==============================-->
 <!--  <cover>                     -->
