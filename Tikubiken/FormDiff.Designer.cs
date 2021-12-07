@@ -40,6 +40,8 @@ namespace Tikubiken
             this.buttonStart = new System.Windows.Forms.Button();
             this.progressBar = new System.Windows.Forms.ProgressBar();
             this.textBoxLog = new System.Windows.Forms.TextBox();
+            this.labelDeltaEncoding = new System.Windows.Forms.Label();
+            this.comboBoxDeltaEncoding = new System.Windows.Forms.ComboBox();
             this.SuspendLayout();
             // 
             // labelSource
@@ -107,21 +109,21 @@ namespace Tikubiken
             // 
             this.labelProgress.AutoSize = true;
             this.labelProgress.ImeMode = System.Windows.Forms.ImeMode.NoControl;
-            this.labelProgress.Location = new System.Drawing.Point(8, 144);
+            this.labelProgress.Location = new System.Drawing.Point(8, 184);
             this.labelProgress.Name = "labelProgress";
             this.labelProgress.Size = new System.Drawing.Size(52, 15);
-            this.labelProgress.TabIndex = 8;
+            this.labelProgress.TabIndex = 1000;
             this.labelProgress.Text = "Progress";
             // 
             // buttonStart
             // 
-            this.buttonStart.Anchor = System.Windows.Forms.AnchorStyles.Top;
+            this.buttonStart.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.buttonStart.Enabled = false;
             this.buttonStart.ImeMode = System.Windows.Forms.ImeMode.NoControl;
-            this.buttonStart.Location = new System.Drawing.Point(216, 112);
+            this.buttonStart.Location = new System.Drawing.Point(216, 152);
             this.buttonStart.Name = "buttonStart";
             this.buttonStart.Size = new System.Drawing.Size(80, 24);
-            this.buttonStart.TabIndex = 7;
+            this.buttonStart.TabIndex = 8;
             this.buttonStart.Text = "&Start";
             this.buttonStart.UseVisualStyleBackColor = true;
             this.buttonStart.Click += new System.EventHandler(this.buttonStart_Click);
@@ -131,10 +133,10 @@ namespace Tikubiken
             this.progressBar.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.progressBar.ImeMode = System.Windows.Forms.ImeMode.NoControl;
-            this.progressBar.Location = new System.Drawing.Point(8, 160);
+            this.progressBar.Location = new System.Drawing.Point(8, 200);
             this.progressBar.Name = "progressBar";
             this.progressBar.Size = new System.Drawing.Size(480, 23);
-            this.progressBar.TabIndex = 6;
+            this.progressBar.TabIndex = 1001;
             // 
             // textBoxLog
             // 
@@ -143,19 +145,41 @@ namespace Tikubiken
             | System.Windows.Forms.AnchorStyles.Right)));
             this.textBoxLog.BackColor = System.Drawing.SystemColors.Window;
             this.textBoxLog.ImeMode = System.Windows.Forms.ImeMode.Disable;
-            this.textBoxLog.Location = new System.Drawing.Point(8, 200);
+            this.textBoxLog.Location = new System.Drawing.Point(8, 240);
             this.textBoxLog.Multiline = true;
             this.textBoxLog.Name = "textBoxLog";
             this.textBoxLog.ReadOnly = true;
             this.textBoxLog.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.textBoxLog.Size = new System.Drawing.Size(480, 72);
+            this.textBoxLog.Size = new System.Drawing.Size(480, 96);
             this.textBoxLog.TabIndex = 10;
+            // 
+            // labelDeltaEncoding
+            // 
+            this.labelDeltaEncoding.AutoSize = true;
+            this.labelDeltaEncoding.Location = new System.Drawing.Point(8, 116);
+            this.labelDeltaEncoding.Name = "labelDeltaEncoding";
+            this.labelDeltaEncoding.Size = new System.Drawing.Size(127, 15);
+            this.labelDeltaEncoding.TabIndex = 6;
+            this.labelDeltaEncoding.Text = "Delta &Encoding Format";
+            // 
+            // comboBoxDeltaEncoding
+            // 
+            this.comboBoxDeltaEncoding.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.comboBoxDeltaEncoding.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.comboBoxDeltaEncoding.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
+            this.comboBoxDeltaEncoding.FormattingEnabled = true;
+            this.comboBoxDeltaEncoding.Location = new System.Drawing.Point(152, 112);
+            this.comboBoxDeltaEncoding.Name = "comboBoxDeltaEncoding";
+            this.comboBoxDeltaEncoding.Size = new System.Drawing.Size(256, 23);
+            this.comboBoxDeltaEncoding.TabIndex = 7;
             // 
             // FormDiff
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(496, 281);
+            this.ClientSize = new System.Drawing.Size(496, 345);
+            this.Controls.Add(this.comboBoxDeltaEncoding);
+            this.Controls.Add(this.labelDeltaEncoding);
             this.Controls.Add(this.textBoxLog);
             this.Controls.Add(this.labelProgress);
             this.Controls.Add(this.buttonStart);
@@ -189,6 +213,8 @@ namespace Tikubiken
         private System.Windows.Forms.Button buttonStart;
         private System.Windows.Forms.ProgressBar progressBar;
         private System.Windows.Forms.TextBox textBoxLog;
+        private System.Windows.Forms.Label labelDeltaEncoding;
+        private System.Windows.Forms.ComboBox comboBoxDeltaEncoding;
     }
 }
 

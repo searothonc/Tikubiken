@@ -34,13 +34,18 @@ namespace Tikubiken
 		//------------------------------------------------------------
 		// Properties
 		//------------------------------------------------------------
-		public string ExeDir	{ get; }
-		public string IniPath	{ get; }
 
-		public string CommandReportFile	{ get; protected set; }
+		// Envrionment paths
+		public string ExeDir		{ get; }
+		public string IniPath		{ get; }
 
-		public string LastDir	{ get; set; }
-		public string LastOut	{ get; set; }
+		// Argument paths
+		public string LastDir		{ get; set; }
+		public string LastOut		{ get; set; }
+
+		// Command line options
+		public string	OptCmdReport	{ get; protected set; }
+		public bool		OptSaveXML		{ get; protected set; }
 
 		//------------------------------------------------------------
 		// Constructors
@@ -51,8 +56,10 @@ namespace Tikubiken
 			this.ExeDir = System.Environment.CurrentDirectory;
 			this.IniPath = this.ExeDir + Path.DirectorySeparatorChar + INI_name;
 
+			// Default values of command line options
+			this.OptCmdReport	= null;
+			this.OptSaveXML		= false;
 			// Parse command line parameters
-			this.CommandReportFile = null;
 			ParseCommandLine();
 
 			// Load INI file
@@ -67,13 +74,15 @@ namespace Tikubiken
 			string[] args = Environment.GetCommandLineArgs();
 			for ( int i=1 ; i<args.Length ; ++i )
 			{
-				// RepoprtCmd option that report commands list in text file
-				if ( Regex.Match(args[i], @"^\/ReportCmd=").Success )
+				// [/ReportCmd=filename] RepoprtCmd option that report commands list in text file
+				if ( Regex.Match(args[i], @"(?i)^\/ReportCmd=").Success )
 				{
 					string path = args[i].Substring(11);
 					if ( path[1]!=':' ) path = Path.GetFullPath( Path.Join(this.ExeDir,path) );
-					this.CommandReportFile = path;
+					this.OptCmdReport = path;
 				}
+				// [/SaveXML] Duplicate patch.xml out of result .exe or .tbp file.
+				if ( Regex.Match(args[i], @"(?i)^\/SaveXML$").Success) this.OptSaveXML = true;
 			}
 		}
 

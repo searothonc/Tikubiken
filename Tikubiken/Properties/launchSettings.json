@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "Tikubiken": {
+      "commandName": "Project",
+      "commandLineArgs": "/ReportCmd=report.txt /SaveXML"
+    }
+  }
+}

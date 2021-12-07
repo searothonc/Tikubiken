@@ -4,6 +4,8 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Windows.Forms;
+using System.Collections.Generic;
+
 using Tikubiken.Properties;
 
 namespace Tikubiken
@@ -15,6 +17,15 @@ namespace Tikubiken
 		//------------------------------------------------------------
 		private Tikubiken.MyApp myApp;
 		private Processor m_processor;
+
+		private Dictionary<string,DeltaFormat> dicEncoding = 
+			new Dictionary<string,DeltaFormat> {
+				{	"VCDiff/RFC3284",			DeltaFormat.VCDiff			},
+				{	"open-vcdiff/SDCH",			DeltaFormat.VCDiff_Google	},
+				{	"VCDiff/XDelta3",			DeltaFormat.VCDiff_XDelta3	},
+				{	"BSDiff+Brotli(Optimal)",	DeltaFormat.BsPlus_Optimal	},
+				{	"BSDiff+Brotli(Fastest)",	DeltaFormat.BsPlus_Fastest	},
+			};
 
 		//------------------------------------------------------------
 		// Propeerties
@@ -43,6 +54,7 @@ namespace Tikubiken
 			myApp = new Tikubiken.MyApp();
 
 			// Initialyze UIs
+			InitDropdown();
 			ClearLogText();
 		}
 
@@ -98,14 +110,14 @@ namespace Tikubiken
 		{
 			using (OpenFileDialog dlg = new OpenFileDialog()) {
 				// dlg.Title = "Open File";
-				dlg.InitialDirectory = myApp.lastDir;
+				dlg.InitialDirectory = myApp.LastDir;
 				dlg.Filter = Resources.ofd_src_filter;
 				dlg.DefaultExt = "*.xml";
 
 				if (dlg.ShowDialog() == DialogResult.OK) {
 					// dialog closed by [OK] button
 					textBoxSource.Text = dlg.FileName;
-					myApp.lastDir = System.IO.Path.GetDirectoryName(dlg.FileName);
+					myApp.LastDir = System.IO.Path.GetDirectoryName(dlg.FileName);
 				} else {
 					// dialog closed by [Cancel] button
 				}
@@ -129,14 +141,14 @@ namespace Tikubiken
 		{
 			using (SaveFileDialog dlg = new SaveFileDialog()) {
 				// dlg.Title = "Open File";
-				dlg.InitialDirectory = myApp.lastOut;
+				dlg.InitialDirectory = myApp.LastOut;
 				dlg.Filter = Resources.ofd_out_filter;
 				dlg.DefaultExt = "*.tbp";
 
 				if (dlg.ShowDialog() == DialogResult.OK) {
 					// dialog closed by [OK] button
 					textBoxOutput.Text = dlg.FileName;
-					myApp.lastOut = System.IO.Path.GetDirectoryName(dlg.FileName);
+					myApp.LastOut = System.IO.Path.GetDirectoryName(dlg.FileName);
 				} else {
 					// dialog closed by [Cancel] button
 				}
@@ -156,6 +168,34 @@ namespace Tikubiken
 		{
 			SetEnable_UIs_source(isEnabled);
 			SetEnable_UIs_output(isEnabled);
+		}
+
+		//------------------------------------------------------------
+		// Delta Encoding dropdown list combobox
+		//------------------------------------------------------------
+		private void InitDropdown()
+		{
+			// Bind dropdown list
+			string[] keys = new string[dicEncoding.Count];
+			dicEncoding.Keys.CopyTo(keys,0);
+			comboBoxDeltaEncoding.DataSource = keys;
+
+			// Select initial item
+			comboBoxDeltaEncoding.SelectedIndex = 0;
+		}
+
+		private DeltaFormat GetDropdownValue() 
+			=> dicEncoding[comboBoxDeltaEncoding.SelectedItem as string];
+
+		// Set enability for [Output]
+		private void SetEnable_UI_DeltaEncoding(bool isEnabled)
+			=> comboBoxDeltaEncoding.Enabled = isEnabled;
+
+		// Set enability for UIs related to operation settings
+		private void SetEnable_UIs_EncodingSettings(bool isEnabled)
+		{
+			SetEnable_UIs_filepath(isEnabled);
+			SetEnable_UI_DeltaEncoding(isEnabled);
 		}
 
 		//------------------------------------------------------------
@@ -207,30 +247,55 @@ namespace Tikubiken
 				{
 					using ( m_processor = new Processor(OperateProgress) )
 					{
-						progressBar.Maximum = m_processor.Ready(
+						( progressBar.Maximum, progressBar.Value ) = m_processor.Ready(
 								textBoxSource.Text,
-								textBoxOutput.Text
+								textBoxOutput.Text,
+								GetDropdownValue()
 							);
+						// for "/ReportCmd=" commad line option
+						// must before asynchronous things
+						if ( myApp.OptCmdReport != null )
+						{
+							using ( var sw = new StreamWriter(myApp.OptCmdReport) )
+							{
+								sw.Write(m_processor.ReportBatch());
+								sw.Close();
+							}
+						}
 
+						// Start and await asyncronous processing
 						SetupCancelButton();
-						await m_processor.RunAsync();
+						await m_processor.RunAsync(myApp.OptSaveXML);
+						AddLogText( "---Complete---" );
 					}
 				}
 				catch (OperationCanceledException)
 				{
 					// The user intended to cancel processing.
 					// So the exception is simply discarded.
+					AddLogText( "---Cancelled---" );
 				}
 				catch (Processor.Error pe)
 				{
 					// Show reason why the processor has aborted.
+					AddLogText( "!!!Error!!!" );
 					AddLogText( pe.ToString() );
 					AddLogText( "---Aborted---" );
 				}
+				#if	!DEBUG
+				catch ( FileNotFoundException fnfe )
+				{
+					// File does not exist
+					AddLogText( fnfe.Message );
+					//AddLogText( fnfe.FileName );
+					AddLogText( "---Aborted---" );
+				}
+				#endif
 				catch (Exception exc)
 				{
 					// Any other exception caught shows the full information of trace.
 					AddLogText( exc.ToString() );
+					AddLogText( "---Aborted---" );
 				}
 				finally
 				{
@@ -241,6 +306,8 @@ namespace Tikubiken
 			else
 			{
 				//Debug.WriteLine( "[Cancel] button" );
+				AddLogText( "Cancelling..." );
+				buttonStart.Enabled = false;
 				CancelOperation();
 			}
 		}
@@ -256,14 +323,15 @@ namespace Tikubiken
 		// Reset UI elements
 		private void DisableStartButton()
 		{
-			SetEnable_UIs_filepath(false);
+			SetEnable_UIs_EncodingSettings(false);
+			buttonStart.Text = Resources.btntext_Cancel;
 			buttonStart.Enabled = false;
 		}
 
 		// Reset UI elements
 		private void SetupCancelButton()
 		{
-			SetEnable_UIs_filepath(false);
+			SetEnable_UIs_EncodingSettings(false);
 			buttonStart.Text = Resources.btntext_Cancel;
 			buttonStart.Enabled = true;
 		}
@@ -271,7 +339,7 @@ namespace Tikubiken
 		// Reset UI elements
 		private void ResetUIElements()
 		{
-			SetEnable_UIs_filepath(true);
+			SetEnable_UIs_EncodingSettings(true);
 			buttonStart.Text = Resources.btntext_Start;
 			Init_buttonStart();
 			textBoxSource.Text = "";

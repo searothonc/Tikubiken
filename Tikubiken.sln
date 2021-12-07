@@ -13,10 +13,55 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "dtd", "dtd", "{D54E502B-306
 		dtd\tikubiken_patch100.dtd = dtd\tikubiken_patch100.dtd
 	EndProjectSection
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "dll", "dll", "{A8363D18-C5F1-47FD-8096-F8CD4F07589F}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "BsPlus", "BsPlus", "{4AE31AAA-6FAE-4CF9-AD36-28C8E1EDA10E}"
 	ProjectSection(SolutionItems) = preProject
-		dll\bslib.dll = dll\bslib.dll
-		dll\ICSharpCode.SharpZipLib.dll = dll\ICSharpCode.SharpZipLib.dll
+		BsPlus\BsPlusCommon.cs = BsPlus\BsPlusCommon.cs
+		BsPlus\BsPlusDiff.cs = BsPlus\BsPlusDiff.cs
+		BsPlus\BsPlusPatch.cs = BsPlus\BsPlusPatch.cs
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "VCDiff", "VCDiff", "{B54E4408-D587-466C-B6FE-E9D280E49A32}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Encoders", "Encoders", "{91D31942-69E0-4A50-91CF-E6184DE1B533}"
+	ProjectSection(SolutionItems) = preProject
+		VCDiff\Encoders\BlockHash.cs = VCDiff\Encoders\BlockHash.cs
+		VCDiff\Encoders\ChunkEncoder.cs = VCDiff\Encoders\ChunkEncoder.cs
+		VCDiff\Encoders\InstructionMap.cs = VCDiff\Encoders\InstructionMap.cs
+		VCDiff\Encoders\RollingHash.cs = VCDiff\Encoders\RollingHash.cs
+		VCDiff\Encoders\VcEncoder.cs = VCDiff\Encoders\VcEncoder.cs
+		VCDiff\Encoders\WindowEncoder.cs = VCDiff\Encoders\WindowEncoder.cs
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Decoders", "Decoders", "{DE5AD052-10BF-444E-B17B-B4BA470B765C}"
+	ProjectSection(SolutionItems) = preProject
+		VCDiff\Decoders\BodyDecoder.cs = VCDiff\Decoders\BodyDecoder.cs
+		VCDiff\Decoders\CustomCodeTableDecoder.cs = VCDiff\Decoders\CustomCodeTableDecoder.cs
+		VCDiff\Decoders\InstructionDecoder.cs = VCDiff\Decoders\InstructionDecoder.cs
+		VCDiff\Decoders\VcDecoderEx.cs = VCDiff\Decoders\VcDecoderEx.cs
+		VCDiff\Decoders\WindowDecoder.cs = VCDiff\Decoders\WindowDecoder.cs
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Includes", "Includes", "{24C3BD65-A592-480B-8193-F993C64E9569}"
+	ProjectSection(SolutionItems) = preProject
+		VCDiff\Includes\Include.cs = VCDiff\Includes\Include.cs
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Shared", "Shared", "{E147CD9C-5AB4-4FAC-9A1E-0B4727CE2894}"
+	ProjectSection(SolutionItems) = preProject
+		VCDiff\Shared\AddressCache.cs = VCDiff\Shared\AddressCache.cs
+		VCDiff\Shared\Adler32.cs = VCDiff\Shared\Adler32.cs
+		VCDiff\Shared\ByteBuffer.cs = VCDiff\Shared\ByteBuffer.cs
+		VCDiff\Shared\ByteStreamReader.cs = VCDiff\Shared\ByteStreamReader.cs
+		VCDiff\Shared\Checksum.cs = VCDiff\Shared\Checksum.cs
+		VCDiff\Shared\ChecksumFormat.cs = VCDiff\Shared\ChecksumFormat.cs
+		VCDiff\Shared\CodeTable.cs = VCDiff\Shared\CodeTable.cs
+		VCDiff\Shared\Extensions.cs = VCDiff\Shared\Extensions.cs
+		VCDiff\Shared\IByteBuffer.cs = VCDiff\Shared\IByteBuffer.cs
+		VCDiff\Shared\Intrinsics.cs = VCDiff\Shared\Intrinsics.cs
+		VCDiff\Shared\NativeAllocation.cs = VCDiff\Shared\NativeAllocation.cs
+		VCDiff\Shared\PinnedArrayRental.cs = VCDiff\Shared\PinnedArrayRental.cs
+		VCDiff\Shared\Pool.cs = VCDiff\Shared\Pool.cs
+		VCDiff\Shared\VarIntBE.cs = VCDiff\Shared\VarIntBE.cs
 	EndProjectSection
 EndProject
 Global
@@ -36,6 +81,12 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{91D31942-69E0-4A50-91CF-E6184DE1B533} = {B54E4408-D587-466C-B6FE-E9D280E49A32}
+		{DE5AD052-10BF-444E-B17B-B4BA470B765C} = {B54E4408-D587-466C-B6FE-E9D280E49A32}
+		{24C3BD65-A592-480B-8193-F993C64E9569} = {B54E4408-D587-466C-B6FE-E9D280E49A32}
+		{E147CD9C-5AB4-4FAC-9A1E-0B4727CE2894} = {B54E4408-D587-466C-B6FE-E9D280E49A32}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {80858BE9-A833-495C-9564-52BB819ECB15}

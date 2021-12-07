@@ -10,6 +10,10 @@
     <Description>Utility to make self-extracting binary patch utility in Tikubiken format.</Description>
     <Copyright>Copyright 2021 © Searothonc</Copyright>
     <AssemblyName>Tikubiken</AssemblyName>
+    <AssemblyTitle>Utility to make self-extracting binary patch utility.</AssemblyTitle>
+    <Nullable>annotations</Nullable>
+    <PackageProjectUrl />
+    <RepositoryUrl>https://github.com/searothonc/Tikubiken</RepositoryUrl>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
@@ -19,19 +23,39 @@
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\BsPlus\BsPlusCommon.cs" Link="BsPlus\BsPlusCommon.cs" />
+    <Compile Include="..\BsPlus\BsPlusDiff.cs" Link="BsPlus\BsPlusDiff.cs" />
+    <Compile Include="..\VCDiff\Encoders\BlockHash.cs" Link="VCDiff\Encoders\BlockHash.cs" />
+    <Compile Include="..\VCDiff\Encoders\ChunkEncoder.cs" Link="VCDiff\Encoders\ChunkEncoder.cs" />
+    <Compile Include="..\VCDiff\Encoders\InstructionMap.cs" Link="VCDiff\Encoders\InstructionMap.cs" />
+    <Compile Include="..\VCDiff\Encoders\RollingHash.cs" Link="VCDiff\Encoders\RollingHash.cs" />
+    <Compile Include="..\VCDiff\Encoders\VcEncoder.cs" Link="VCDiff\Encoders\VcEncoder.cs" />
+    <Compile Include="..\VCDiff\Encoders\WindowEncoder.cs" Link="VCDiff\Encoders\WindowEncoder.cs" />
+    <Compile Include="..\VCDiff\Includes\Include.cs" Link="VCDiff\Include.cs" />
+    <Compile Include="..\VCDiff\Shared\AddressCache.cs" Link="VCDiff\Shared\AddressCache.cs" />
+    <Compile Include="..\VCDiff\Shared\Adler32.cs" Link="VCDiff\Shared\Adler32.cs" />
+    <Compile Include="..\VCDiff\Shared\ByteBuffer.cs" Link="VCDiff\Shared\ByteBuffer.cs" />
+    <Compile Include="..\VCDiff\Shared\ByteStreamReader.cs" Link="VCDiff\Shared\ByteStreamReader.cs" />
+    <Compile Include="..\VCDiff\Shared\Checksum.cs" Link="VCDiff\Shared\Checksum.cs" />
+    <Compile Include="..\VCDiff\Shared\ChecksumFormat.cs" Link="VCDiff\Shared\ChecksumFormat.cs" />
+    <Compile Include="..\VCDiff\Shared\CodeTable.cs" Link="VCDiff\Shared\CodeTable.cs" />
+    <Compile Include="..\VCDiff\Shared\Extensions.cs" Link="VCDiff\Shared\Extensions.cs" />
+    <Compile Include="..\VCDiff\Shared\IByteBuffer.cs" Link="VCDiff\Shared\IByteBuffer.cs" />
+    <Compile Include="..\VCDiff\Shared\Intrinsics.cs" Link="VCDiff\Shared\Intrinsics.cs" />
+    <Compile Include="..\VCDiff\Shared\NativeAllocation.cs" Link="VCDiff\Shared\NativeAllocation.cs" />
+    <Compile Include="..\VCDiff\Shared\VarIntBE.cs" Link="VCDiff\Shared\VarIntBE.cs" />
+  </ItemGroup>
 
   <ItemGroup>
     <EmbeddedResource Include="..\dtd\tikubiken_diff100.dtd" Link="Resources\tikubiken_diff100.dtd" />
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="bslib">
-      <HintPath>..\dll\bslib.dll</HintPath>
-    </Reference>
-    <Reference Include="ICSharpCode.SharpZipLib">
-      <HintPath>..\dll\ICSharpCode.SharpZipLib.dll</HintPath>
-    </Reference>
+    <PackageReference Include="System.Security.Cryptography.Algorithms" Version="4.3.1" />
   </ItemGroup>
 
   <ItemGroup>
@@ -47,6 +71,12 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="BsPlus\" />
+    <Folder Include="VCDiff\Encoders\" />
+    <Folder Include="VCDiff\Shared\" />
   </ItemGroup>
 
 </Project>

@@ -79,6 +79,33 @@ namespace Tikubiken.Properties {
         }
         
         /// <summary>
+        ///   Copying file:  に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        internal static string log_copyfile {
+            get {
+                return ResourceManager.GetString("log_copyfile", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Comparing files:  に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        internal static string log_diff {
+            get {
+                return ResourceManager.GetString("log_diff", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Calculating hash value for:  に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        internal static string log_digest {
+            get {
+                return ResourceManager.GetString("log_digest", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Executable files (*.exe)|*.exe|TBP files (*.tbp)|*.tbp|All files (*.*)|*.* に類似しているローカライズされた文字列を検索します。
         /// </summary>
         internal static string ofd_out_filter {
