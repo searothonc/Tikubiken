@@ -4,11 +4,13 @@
  * Copyright (c) 2021 Searothonc
 \* ********************************************************************** */
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Text;
+using System.Reflection;
 
 namespace Tikubiken
 {
@@ -83,15 +85,94 @@ namespace Tikubiken
 		public static void AcceptCancel(CancellationToken  cToken) => cToken.ThrowIfCancellationRequested();
 		public static void AcceptCancel(CancellationToken? cToken) => cToken?.ThrowIfCancellationRequested();
 
+#if DEBUG
+		private const string strAltTempRoot = @"..\..\..\..\test_data\temp";
+#endif
+
 		// File extensions, headers
-		public static readonly string DeltaExt	= @".tbdelta";
-		public static readonly string PatchExt	= @".tbp";
+		public const string DeltaExt	= @".tbdelta";
+		public const string PatchExt	= @".tbp";
 
 		// Filename for internal patch xml
-		public static readonly string PatchXML	= "patch.xml";
+		public const string PatchXML	= @"patch.xml";
 
+		// Filename for license document
+		public const string LicenseMD	= @"LICENSE.md";
+
+
+		//------------------------------------------------------------
+		// Unpack lisense document
+		//------------------------------------------------------------
+
+		/// <summary>Unpack LICENSE.md</summary>
+		/// <param name="pathDirTo">(string)Full path where license document extract to</param>
+		/// <param name="resourceId">(string)Resource ID string of embedded license document</param>
+		/// <returns>(bool)File is newly created. If the return value is false, the file already exists there.</returns>
+		public static bool UpnackLicensesDocument(string pathDirTo, string resourceId)
+		{
+			// Load document from resource
+			var asm = Assembly.GetExecutingAssembly();
+			string doc;
+			long length;
+			using ( var stream = asm.GetManifestResourceStream(resourceId) )
+			using ( var reader = new StreamReader(stream) )
+			{
+				length = stream.Length;
+				doc = reader.ReadToEnd();
+			}
+
+			// Check if the document already has been extracted
+			string nameOutput = LicenseMD;
+			FileInfo fi;
+			for ( int i=0 ; true ; i++ )
+			{
+				fi = new FileInfo( Path.Join(pathDirTo, nameOutput) );
+				if ( !fi.Exists ) break;	// file is not exist, so it can be created new
+				if ( fi.Length==length )
+				{
+					using ( var reader = fi.OpenText() )
+						if ( reader.ReadToEnd() == doc ) return false;	// the file already exists
+				}
+				nameOutput = $"{LicenseMD}.{i}";
+			}
+
+			// Write to file
+			using ( var writer = fi.CreateText() ) writer.Write(doc);
+
+			// the file is newly created
+			return true;
+		}
+
+		//------------------------------------------------------------
+		// Operate paths, filenames and temporary files/directories.
+		//------------------------------------------------------------
+
+		/// <summary>Concatenate multiple relative path.</summary>
+		/// <remarks>
+		/// If you want to make an absolute path, first path in the array must be absolute.
+		/// <remarks>
+		public static string JoinPath(params string[] p) => Path.GetFullPath( Path.Join(p) );
+
+		// Create temprary filename that has unique path name
+		public static string GetTemporaryFileName()
+		{
+			string path = Path.GetTempFileName();
+			File.Delete(path);		// GetTempFileName() creates temporary file
+
+#if DEBUG
+			// Path of the temporary directory is fixed in debug build
+			// to avoid forgetting to delete.
+			path = JoinPath(strAltTempRoot, Path.GetFileName(path));
+#else
+			Debug.WriteLine($"[Temp={path}]");
+#endif
+			return path;
+		}
+
+
+		//------------------------------------------------------------
 		// Extension methods for TBPHeader
-		//------------------------------
+		//------------------------------------------------------------
 
 		// [Extension method]Load structure from stream
 		// 		TPBHeader header = streamObj.ReadTBPHeader();
@@ -154,7 +235,7 @@ namespace Tikubiken
 		private Int16	_HeaderSize;
 		private Int16	_DeltaEncodingCompression;
 		private Int16	_ReservedWORD;
-		private Int32	_ReservedDWORD;
+		private Int32	_UnzipSize;
 		private Int32	_ZipOffset;
 		private Int32	_ZipLength;
 		private Int32	_HeadOffset;
@@ -171,7 +252,7 @@ namespace Tikubiken
 			this._HeaderSize				= (Int16) TBPHeader.Size;
 			this._DeltaEncodingCompression	= (Int16) encoding;
 			this._ReservedWORD				= 0;
-			this._ReservedDWORD				= 0;
+			this._UnzipSize					= 0;
 			this._ZipOffset					= 0;
 			this._ZipLength					= 0;
 			this._HeadOffset				= 0;
@@ -197,8 +278,9 @@ namespace Tikubiken
 			get => (DeltaFormat) _DeltaEncodingCompression; 
 			set => this._DeltaEncodingCompression = (Int16) value;
 		}
-		public Int32 ZipOffset		{ get => this._ZipOffset;	set => this._ZipOffset	= value;	}
-		public Int32 ZipLength		{ get => this._ZipLength;	set => this._ZipLength	= value;	}
+		public Int32 UnzipSize	{ get => this._UnzipSize;	set => this._UnzipSize	= value;	}
+		public Int32 ZipOffset	{ get => this._ZipOffset;	set => this._ZipOffset	= value;	}
+		public Int32 ZipLength	{ get => this._ZipLength;	set => this._ZipLength	= value;	}
 		public Int32 HeadOffset	{ get => this._HeadOffset;	set => this._HeadOffset	= value;	}
 		public Int32 TailOffset	{ get => this._TailOffset;	set => this._TailOffset	= value;	}
 
@@ -206,7 +288,13 @@ namespace Tikubiken
 		//------------------------------
 
 		// Signature check
-		public bool HasValidSignature() => this._Signature != TBPHeader.SignatureTBP;
+		public bool HasValidSignature()
+		{
+			if ( this._Signature	!= TBPHeader.SignatureTBP	) return false;
+			if ( this._HeaderLength	!= TBPHeader.Size			) return false;
+			if ( this._HeaderSize	!= TBPHeader.Size			) return false;
+			return true;
+		}
 	}
 }
 

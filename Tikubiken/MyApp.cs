@@ -16,6 +16,7 @@ using Sgry.Ini;
 using System.IO;
 using System.Windows.Forms;
 using System.Text.RegularExpressions;
+using System.Reflection;
 
 namespace Tikubiken
 {
@@ -25,6 +26,8 @@ namespace Tikubiken
 		// Constants
 		//------------------------------------------------------------
 		public const string INI_name = @"Tikubiken.ini";
+
+		private const string ridLicense = @"Tikubiken.Resources.LICENSE.md";
 
 		//------------------------------------------------------------
 		// Data
@@ -61,6 +64,9 @@ namespace Tikubiken
 			this.OptSaveXML		= false;
 			// Parse command line parameters
 			ParseCommandLine();
+
+			// Unpack lisense document before use any libraries with lisense
+			Ext.UpnackLicensesDocument(this.ExeDir, ridLicense);
 
 			// Load INI file
 			iniDoc = IniLoad();

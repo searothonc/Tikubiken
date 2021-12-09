@@ -26,25 +26,20 @@ namespace Tikubiken
 		// Constants
 		//--------------------------------------------------------
 
-#if DEBUG
-		private const string strAltTempRoot = @"..\..\..\..\test_data\temp";
-#endif
-
-		// Block size of file operation
-		private const int blockSize		= 4096;
+		// Block size of file operation(at least >= TPHeader.AlignmentTBP(=16)
+		private const int c_blockSize		= 65536;		// 64KB
 
 		// line break sugar
 		private static string lineBreak => System.Environment.NewLine;
 
 		// Resource names
 		// Resouce ID for diff format DTD
-		private const string ridDTDdiff			= "Tikubiken.Resources.tikubiken_diff100.dtd";
+		private const string c_ridDTDdiff			= @"Tikubiken.Resources.tikubiken_diff100.dtd";
+		// Resouce ID for Update.exe
+		private const string c_ridUpdateExe		= @"Tikubiken.Resources.Update.exe";
 
 		// System ID URIs of DTD for patch
-		private const string uriDTDpatch		= "https://raw.githubusercontent.com/searothonc/Tikubiken/master/dtd/tikubiken_patch100.dtd";
-
-		// Compression level
-		//private const System.IO.Compression.CompressionLevel compLv	= System.IO.Compression.CompressionLevel.Optimal;
+		private const string c_uriDTDpatch		= @"https://raw.githubusercontent.com/searothonc/Tikubiken/master/dtd/tikubiken_patch100.dtd";
 
 
 		//============================================================
@@ -374,7 +369,8 @@ namespace Tikubiken
 		/// <remarks>
 		/// If you want to make an absolute path, first path in the array must be absolute.
 		/// <remarks>
-		public static string JoinPath(params string[] p) => Path.GetFullPath( Path.Join(p) );
+		//public static string JoinPath(params string[] p) => Path.GetFullPath( Path.Join(p) );
+		public static string JoinPath(params string[] p) => Ext.JoinPath(p);
 
 		// Constants for IsAbsPath()
 		private static string _IsAbsPath_ds1 = Regex.Escape( Path.DirectorySeparatorChar.ToString() );
@@ -485,9 +481,6 @@ namespace Tikubiken
 
 			// FileInfo for input and output file
 			fiSourceXML = new FileInfo(sourceXML);
-#if	DEBUG
-			if ( Path.GetExtension(outputPath)!=Ext.PatchExt ) outputPath += Ext.PatchExt;
-#endif
 			fiOutput = new FileInfo(outputPath);
 
 			// Check if input XML file exists
@@ -513,29 +506,13 @@ namespace Tikubiken
 			return (currentProgress.Max, currentProgress.Value);
 		}
 
-		// Create temprary filename that has unique path name
-		private string GetTemporaryFileName()
-		{
-			string path = Path.GetTempFileName();
-			File.Delete(path);		// GetTempFileName() creates temporary file
-
-#if DEBUG
-			// Path of the temporary directory is fixed in debug build
-			// to avoid forgetting to delete.
-			path = JoinPath(strAltTempRoot, Path.GetFileName(path));
-#else
-			Debug.WriteLine($"[Temp={path}]");
-#endif
-			return path;
-		}
-
 		// Create temprary directory that has unique path name
 		private void CreateTemporaryDirectory()
 		{
 			if ( dirTmp != null ) DeleteTemporaryDirectory();
 
 			// Create directory info and actual directory of unique temporary name.
-			dirTmp = new DirectoryInfo(GetTemporaryFileName());
+			dirTmp = new DirectoryInfo(Ext.GetTemporaryFileName());
 			dirTmp.Create();
 		}
 
@@ -576,7 +553,7 @@ namespace Tikubiken
 
 			using ( var streamXML = fiSourceXML.OpenRead() )
 			{
-				using ( var streamDTD = asm.GetManifestResourceStream(ridDTDdiff) )
+				using ( var streamDTD = asm.GetManifestResourceStream(c_ridDTDdiff) )
 				{
 					if ( streamDTD == null ) throw new ArgumentNullException();
 
@@ -804,6 +781,10 @@ namespace Tikubiken
 		// Aggregate <patch> elements
 		private void ParseXML_AggregatePatches()
 		{
+			// Sum of file sizes for branch and target each, in KB
+			int sizeBranch = 0;
+			int sizeTarget = 0;
+
 			// Go round all <patch> elements
 			foreach ( var elmPatch in xmlDoc.Descendants("patch") )
 			{
@@ -827,7 +808,11 @@ namespace Tikubiken
 					select ParseXML_PathToRegex(e);
 
 				// Differences of file structure between two directories.
-				ParseXML_CompareDirectory(dirResult, ".", elmPatch, strBranchPath, ignoreBranch, strTargetPath, ignoreTarget);
+				(sizeBranch, sizeTarget) = ParseXML_CompareDirectory(dirResult, ".", 
+						elmPatch, strBranchPath, ignoreBranch, strTargetPath, ignoreTarget);
+
+				// Write size differences between branch and target to XML
+				elmPatch.Add( new XAttribute("balance", sizeTarget>sizeBranch ? sizeTarget-sizeBranch : 0) );
 
 				// Remove <branch><target> element from XML
 				elmBranch.Remove();
@@ -864,11 +849,16 @@ namespace Tikubiken
 		}
 
 		// Compare file structures between two directories.
-		private void ParseXML_CompareDirectory( DirectoryInfo dirResult, 
+		private (int sizeOfBranch, int sizeOfTarget) ParseXML_CompareDirectory( DirectoryInfo dirResult, 
 									string relativePath, XElement elmPatch,
 									string branchBase, IEnumerable<Regex> branchesExclude, 
 									string targetBase, IEnumerable<Regex> targetsExclude )
 		{
+			// Sum of file sizes for branch and target each, in KB
+			int sizeBranch = 0;
+			int sizeTarget = 0;
+			int subBranch, subTarget;
+
 			DirectoryInfo dirBranch = new DirectoryInfo( JoinPath(branchBase, relativePath) );
 			DirectoryInfo dirTarget = new DirectoryInfo( JoinPath(targetBase, relativePath) );
 
@@ -897,11 +887,15 @@ namespace Tikubiken
 			IEnumerable<string> dirsOnlyInTarget = strTargetDirs.Except(strBranchDirs);
 
 			// Relatively descend into sub-directories
-			foreach ( string d in dirsCommonToBoth ) 
-				ParseXML_CompareDirectory( dirResult, 
-									Path.Join(relativePath,d), elmPatch, 
-									branchBase, branchesExclude, 
-									targetBase, targetsExclude );
+			foreach ( string d in dirsCommonToBoth )
+			{
+				(subBranch, subTarget) = ParseXML_CompareDirectory( dirResult, 
+											Path.Join(relativePath,d), elmPatch, 
+											branchBase, branchesExclude, 
+											targetBase, targetsExclude );
+				sizeBranch += subBranch;
+				sizeTarget += subTarget;
+			}
 
 			// Write the directories to be removed into XML
 			foreach ( string d in dirsOnlyInBranch )
@@ -926,6 +920,15 @@ namespace Tikubiken
 				where !targetsExclude.Any( r => ParseXML_MatchExclude(d,r) )
 				select d.Name;
 
+			// Sum file sizes
+			sizeBranch += (	from f in dirBranch.EnumerateFiles()
+							where !branchesExclude.Any( r => ParseXML_MatchExclude(f,r) )
+							select f ).Sum( f => ((int) f.Length + 1023) / 1024 );
+			sizeTarget += (	from f in dirTarget.EnumerateFiles()
+							where !targetsExclude.Any( r => ParseXML_MatchExclude(f,r) )
+							select f ).Sum( f => ((int) f.Length + 1023) / 1024 );
+
+
 			// Files intersection of branches and targets
 			IEnumerable<string> filesCommonToBoth = strBranchFiles.Intersect(strTargetFiles);
 			IEnumerable<string> filesOnlyInBranch = strBranchFiles.Except(strTargetFiles);
@@ -948,8 +951,9 @@ namespace Tikubiken
 				string dst = JoinPath( dirResult.FullName, relativePath, f );
 				listBatch.Add( new Batch(JoinPath(targetBase, relativePath, f), dst) );
 			}
-		}
 
+			return (sizeBranch, sizeTarget);
+		}
 
 		// Create new directory and copy recursively sub-directories and files
 		private void ParseXML_CreateNewDirectory( DirectoryInfo dirResult, 
@@ -1017,6 +1021,7 @@ namespace Tikubiken
 				ThrowIfCancellationRequested();
 
 				// Save to zip archive
+				ReportMessage( $"Compressing..." );
 				await CreateArchive();
 
 				// Post message to reset progress bar
@@ -1153,11 +1158,10 @@ namespace Tikubiken
 			ReportMessage(Resources.log_copyfile + op.FileFrom.Name);
 
 			// Open file streams
-			var fsSrc = op.FileFrom.Open(FileMode.Open, FileAccess.Read, FileShare.Read);
-			var fsDst = op.FileTo.Create();
-
-			// Copy file async
-			await fsSrc.CopyToAsync(fsDst, ctSource.Token );
+			using ( var fsSrc = op.FileFrom.Open(FileMode.Open, FileAccess.Read, FileShare.Read) )
+			using ( var fsDst = op.FileTo.Create() )
+				// Copy file async
+				await fsSrc.CopyToAsync(fsDst, ctSource.Token );
 		}
 
 		//--------------------------------------------------------
@@ -1300,7 +1304,7 @@ namespace Tikubiken
 		private void SaveXML( bool dupXML )
 		{
 			// Replace document type
-			xmlDoc.DocumentType.SystemId = uriDTDpatch;
+			xmlDoc.DocumentType.SystemId = c_uriDTDpatch;
 
 			// Replace "format" attribute for root <Tikubiken> element
 			xmlDoc.Element("Tikubiken").Attribute("format").Value = "patch";
@@ -1340,9 +1344,7 @@ namespace Tikubiken
 		private async Task CreateArchive()
 		{
 			// File paths
-			string zipPath = JoinPath( dirTmp.FullName, fiOutput.Name );
-
-			ReportMessage( $"Compressing..." );
+			string zipPath = JoinPath( dirTmp.FullName, fiOutput.Name + @".zip" );
 
 			// Create ZIP archive without the base directory name
 			ZipFile.CreateFromDirectory( dirWork.FullName, zipPath, 
@@ -1351,6 +1353,7 @@ namespace Tikubiken
 
 			// Header for archive section
 			TBPHeader header = new TBPHeader(this.EncodingFormat);
+			header.UnzipSize = SumDirectorySize( dirWork );
 			header.ZipLength = (int) fiZip.Length;
 
 			ReportMessage( $"Writing: {fiOutput.Name} ..." );
@@ -1363,35 +1366,47 @@ namespace Tikubiken
 #endif
 			{
 				int paddingLength;
+				int len;
+				byte[] buf = new byte[c_blockSize];
 
 				// Write exe section
-				// header.HeadOffset = exe section length
-				header.HeadOffset += TBPHeader.PaddingLength(header.HeadOffset);
+				if ( Path.GetExtension(fiOutput.Name).ToUpper() == @".EXE" )
+				{
+					var asm = Assembly.GetExecutingAssembly();
+					using ( var fsRes = asm.GetManifestResourceStream(c_ridUpdateExe) )
+					{
+						while ( fsRes.Position < fsRes.Length )
+						{
+							len = await fsRes.ReadAsync(buf, 0, c_blockSize, ctSource.Token);
+							await fsArchive.WriteAsync(buf, 0, len, ctSource.Token);
+						}
+					}
+				}
+				header.HeadOffset  = (int) fsArchive.Position;
+				header.HeadOffset += paddingLength = TBPHeader.PaddingLength(header.HeadOffset);
+
+				// Zero padding after exe block
+				Array.Fill<byte>(buf, 0, 0, TBPHeader.AlignmentTBP);
+				await fsArchive.WriteAsync(buf, 0, paddingLength, ctSource.Token);
 
 				// Write alignment padding after exe section
 				header.ZipOffset = header.HeadOffset + TBPHeader.Size - 4;
 				header.TailOffset = header.ZipOffset + header.ZipLength;
-				paddingLength = TBPHeader.PaddingLength(header.TailOffset);
-				header.TailOffset += paddingLength;
+				header.TailOffset += paddingLength = TBPHeader.PaddingLength(header.TailOffset);
 
 				// Write header to file
-				long posiion = fsArchive.Position;
 				fsArchive.WriteTBPHeader( header );
-				fsArchive.Seek(TBPHeader.Size, SeekOrigin.Begin);
 
 				// Write temporary archive to output asyncronously
 				using ( var fsZip = fiZip.Open(FileMode.Open, FileAccess.Read, FileShare.None) )
 				{
-					int len = 0;;
-					byte[] buf = new byte[blockSize];
-
 					// The first 4 bytes overlap the Zip header.
 					fsZip.Seek(TBPHeader.OverlapLength, SeekOrigin.Begin);
 
 					// Copy across streams
 					while ( fsZip.Position < fsZip.Length )
 					{
-						len = await fsZip.ReadAsync(buf, 0, blockSize, ctSource.Token);
+						len = await fsZip.ReadAsync(buf, 0, c_blockSize, ctSource.Token);
 						await fsArchive.WriteAsync(buf, 0, len, ctSource.Token);
 					}
 
@@ -1404,6 +1419,11 @@ namespace Tikubiken
 				}
 			}
 		}
+
+		// Sum the size of the directory recursively
+		private int SumDirectorySize(DirectoryInfo dir)
+				=> ( from d in dir.EnumerateDirectories() select d).Sum( d => SumDirectorySize(d) ) +
+				   ( from f in dir.EnumerateFiles() select f).Sum( f => (int) f.Length );
 	}
 	//** public sealed class Processor **********************************************************
 
@@ -1466,27 +1486,28 @@ namespace Tikubiken
 		public async Task DoAsync( byte[] binSource, byte[] binTarget, FileInfo fiOutput, 
 		System.Threading.CancellationToken cToken, Progress<float> progress )
 		{
-Debug.WriteLine( fiOutput.Name );
+			using ( var fsOutput = fiOutput.Create() )
+			{
+				// Encoder instance
+				var encoder = new VCDiff.Encoders.VcEncoder( 
+												new VCDiff.Shared.ByteBuffer(binSource),
+												new MemoryStream(binTarget),
+												fsOutput );
 
-			// Encoder instance
-			var encoder = new VCDiff.Encoders.VcEncoder( 
-											new VCDiff.Shared.ByteBuffer(binSource),
-											new MemoryStream(binTarget),
-											fiOutput.Create() );
+				// Encoding parameters
+				VCDiff.Shared.ChecksumFormat checksumFormat = this.Format switch {
+									DeltaFormat.VCDiff			=> VCDiff.Shared.ChecksumFormat.None,
+									DeltaFormat.VCDiff_Google	=> VCDiff.Shared.ChecksumFormat.SDCH,
+									DeltaFormat.VCDiff_XDelta3	=> VCDiff.Shared.ChecksumFormat.Xdelta3,
+									_ => throw new ArgumentException ()
+								};
+				bool interleaved = this.Format == DeltaFormat.VCDiff_Google;
 
-			// Encoding parameters
-			VCDiff.Shared.ChecksumFormat checksumFormat = this.Format switch {
-								DeltaFormat.VCDiff			=> VCDiff.Shared.ChecksumFormat.None,
-								DeltaFormat.VCDiff_Google	=> VCDiff.Shared.ChecksumFormat.SDCH,
-								DeltaFormat.VCDiff_XDelta3	=> VCDiff.Shared.ChecksumFormat.Xdelta3,
-								_ => throw new ArgumentException ()
-							};
-			bool interleaved = this.Format == DeltaFormat.VCDiff_Google;
-
-			// Encode asyncronously, returns VCDiff.Includes.VCDiffResult
-			var result = await encoder.EncodeAsync(cToken, interleaved, checksumFormat, progress);
-			if ( result != VCDiff.Includes.VCDiffResult.SUCCESS ) 
-				throw new Processor.ErrorDeltaEncodingFailed($"VCDiff:{result.ToString()}");
+				// Encode asyncronously, returns VCDiff.Includes.VCDiffResult
+				var result = await encoder.EncodeAsync(cToken, interleaved, checksumFormat, progress);
+				if ( result != VCDiff.Includes.VCDiffResult.SUCCESS ) 
+					throw new Processor.ErrorDeltaEncodingFailed($"VCDiff:{result.ToString()}");
+			}
 		}
 	}
 }
