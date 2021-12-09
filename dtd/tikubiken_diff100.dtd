@@ -17,7 +17,7 @@
 <!--////////////////////////////////////////////////////////////-->
 <!--  <updater>                                                 -->
 <!--////////////////////////////////////////////////////////////-->
-<!ELEMENT updater (cover|title)* >
+<!ELEMENT updater (cover|title|localise)* >
 
 <!--==============================-->
 <!--  <cover>                     -->
@@ -32,6 +32,14 @@
 <!ELEMENT title EMPTY>
 <!ATTLIST title text  CDATA #REQUIRED>
 <!ATTLIST title lang  CDATA #IMPLIED><!-- IETF language tag RFC 5646 -->
+
+<!--==============================-->
+<!--  <localise>                  -->
+<!--==============================-->
+<!ELEMENT localise (#PCDATA)>
+<!ATTLIST localise target (start|progress) #REQUIRED>
+<!ATTLIST localise lang   CDATA #REQUIRED><!-- IETF language tag RFC 5646 -->
+
 
 
 <!--////////////////////////////////////////////////////////////-->
