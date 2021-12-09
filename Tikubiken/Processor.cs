@@ -920,13 +920,16 @@ namespace Tikubiken
 				where !targetsExclude.Any( r => ParseXML_MatchExclude(d,r) )
 				select d.Name;
 
-			// Sum file sizes
+			// Sum file sizes, for branch estimating least
+			// cluster size is maximum possible value of Windows file system
 			sizeBranch += (	from f in dirBranch.EnumerateFiles()
 							where !branchesExclude.Any( r => ParseXML_MatchExclude(f,r) )
-							select f ).Sum( f => ((int) f.Length + 1023) / 1024 );
+							select (int) f.Length / TBPHeader.ClusterSize).Sum();
+
+			// Sum file sizes for target estimating larger 
 			sizeTarget += (	from f in dirTarget.EnumerateFiles()
 							where !targetsExclude.Any( r => ParseXML_MatchExclude(f,r) )
-							select f ).Sum( f => ((int) f.Length + 1023) / 1024 );
+							select ((int) f.Length + TBPHeader.ClusterSize - 1) / TBPHeader.ClusterSize ).Sum();;
 
 
 			// Files intersection of branches and targets
@@ -1423,7 +1426,7 @@ namespace Tikubiken
 		// Sum the size of the directory recursively
 		private int SumDirectorySize(DirectoryInfo dir)
 				=> ( from d in dir.EnumerateDirectories() select d).Sum( d => SumDirectorySize(d) ) +
-				   ( from f in dir.EnumerateFiles() select f).Sum( f => (int) f.Length );
+				   ( from f in dir.EnumerateFiles() select ((int) f.Length + TBPHeader.ClusterSize - 1) / TBPHeader.ClusterSize ).Sum();
 	}
 	//** public sealed class Processor **********************************************************
 

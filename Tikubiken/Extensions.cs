@@ -229,18 +229,20 @@ namespace Tikubiken
 		public const Int16 VersionTBP	= 0x0100;
 		public const Int16 AlignmentTBP	= 16;
 
+		// Cluster size of disk system (maximum in NTFS is 64KB)
+		public const  int ClusterSize	= 65536;
+
 		// Members
 		private Int32	_Signature;
 		private Int16	_Version;
 		private Int16	_HeaderSize;
-		private Int16	_DeltaEncodingCompression;
-		private Int16	_ReservedWORD;
+		private Int32	_ClusterSize;
 		private Int32	_UnzipSize;
 		private Int32	_ZipOffset;
 		private Int32	_ZipLength;
 		private Int32	_HeadOffset;
 		private Int32	_TailOffset;
-		private Int16	_Alignment;
+		private Int16	_DeltaEncodingCompression;
 		private Int16	_HeaderLength;
 
 		// Constructor
@@ -250,14 +252,13 @@ namespace Tikubiken
 			this._Signature					= TBPHeader.SignatureTBP;
 			this._Version					= TBPHeader.VersionTBP;
 			this._HeaderSize				= (Int16) TBPHeader.Size;
-			this._DeltaEncodingCompression	= (Int16) encoding;
-			this._ReservedWORD				= 0;
+			this._ClusterSize				= TBPHeader.ClusterSize;
 			this._UnzipSize					= 0;
 			this._ZipOffset					= 0;
 			this._ZipLength					= 0;
 			this._HeadOffset				= 0;
 			this._TailOffset				= 0;
-			this._Alignment					= TBPHeader.AlignmentTBP;
+			this._DeltaEncodingCompression	= (Int16) encoding;
 			this._HeaderLength				= this._HeaderSize;
 		}
 
@@ -278,6 +279,7 @@ namespace Tikubiken
 			get => (DeltaFormat) _DeltaEncodingCompression; 
 			set => this._DeltaEncodingCompression = (Int16) value;
 		}
+		public Int32 Cluster	{ get => this._ClusterSize; }
 		public Int32 UnzipSize	{ get => this._UnzipSize;	set => this._UnzipSize	= value;	}
 		public Int32 ZipOffset	{ get => this._ZipOffset;	set => this._ZipOffset	= value;	}
 		public Int32 ZipLength	{ get => this._ZipLength;	set => this._ZipLength	= value;	}
