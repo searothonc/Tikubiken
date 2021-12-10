@@ -45,7 +45,7 @@
 <!--////////////////////////////////////////////////////////////-->
 <!ELEMENT patch (remove*) >
 <!ATTLIST patch version   ID      #REQUIRED>
-<!ATTLIST patch balance   NUMBER  #REQUIRED>
+<!ATTLIST patch balance   NMTOKEN #REQUIRED>
 
 <!--==============================-->
 <!--  <remove>                    -->
