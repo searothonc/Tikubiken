@@ -37,7 +37,7 @@
 <!--  <localise>                  -->
 <!--==============================-->
 <!ELEMENT localise (#PCDATA)>
-<!ATTLIST localise target (start|progress) #REQUIRED>
+<!ATTLIST localise target (start|cancel|progress) #REQUIRED>
 <!ATTLIST localise lang   CDATA #REQUIRED><!-- IETF language tag RFC 5646 -->
 
 <!--////////////////////////////////////////////////////////////-->
