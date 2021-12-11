@@ -93,7 +93,7 @@
 <!--==============================-->
 <!ELEMENT text (#PCDATA|br)*>
 <!ATTLIST text lang NMTOKEN #IMPLIED><!-- IETF language tag RFC 5646 -->
-<!ATTLIST text type (ready|process|complete|title|error|err_misplace|err_shortspace) "ready">
+<!ATTLIST text type (ready|process|complete|cancel|title|error|err_misplace|err_shortspace) "ready">
 <!--
 <!ATTLIST text format (plain|html|rtf)>
 -->
