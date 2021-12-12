@@ -2,132 +2,304 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
-using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.IO;
+using System.Xml.Linq;
+using System.Diagnostics;
+
+using Tikubiken.Properties;
 
 namespace Tikubiken
 {
 	public partial class FormPatch : Form
 	{
+		//------------------------------------------------------------
+		// Constants & Enums
+		//------------------------------------------------------------
+
+		public enum ButtonUsage
+		{
+			None,
+			Start,
+			Cancel,
+			Exit,
+			Processing,
+		};
+
+		//------------------------------------------------------------
+		// Fields
+		//------------------------------------------------------------
+		private Processor		m_processor;
+		private int				countMax;
+		private int				countCurrent;
+		private string			strMessage;
+		private string			strState;
+		private ButtonUsage		buttonUsage;
+
+		//------------------------------------------------------------
+		// Initalyzation & Cleaning up
+		//------------------------------------------------------------
 		public FormPatch()
 		{
 			InitializeComponent();
 		}
 
-		private void button_start_Click(object sender, EventArgs e)
+		// Window is about to close
+		private void FormDiff_FormClosing(object sender, FormClosingEventArgs e)
 		{
-			long totalsize = 0;
-			string text = "";
-			var asm = System.Reflection.Assembly.GetExecutingAssembly();
-			var list = asm.GetFiles();
-			foreach (var f in list)
+			// If the button is assigned to processing, window cannot be closed
+			if ( buttonUsage == ButtonUsage.Processing )
 			{
-				totalsize += f.Length;
-				text += f.Name;
-				text += ":";
-				text += f.Length.ToString();
-				text += Environment.NewLine;
+				e.Cancel = true;
+				return;
 			}
-			text += "Total:" + totalsize.ToString();
-			text += Environment.NewLine;
 
-			text += "[System.Reflection.Assembly.GetExecutingAssembly().Location]";
-			text += Environment.NewLine;
-			text += System.Reflection.Assembly.GetExecutingAssembly().Location;
-			text += Environment.NewLine;
+			if ( m_processor != null )
+			{
+				try
+				{
+					m_processor.Cancel();
+				}
+				catch {}
+				finally
+				{
+					m_processor.Dispose();
+					m_processor = null;
+				}
+			}
+		}
 
-			text += "[System.Reflection.Assembly.GetEntryAssembly().Location]";
-			text += Environment.NewLine;
-			text += System.Reflection.Assembly.GetEntryAssembly().Location;
-			text += Environment.NewLine;
+		//------------------------------------------------------------
+		// Form events
+		//------------------------------------------------------------
 
-			text += "[System.Reflection.Assembly.GetExecutingAssembly().CodeBase]";
-			text += Environment.NewLine;
-			text += System.Reflection.Assembly.GetExecutingAssembly().CodeBase;
-			text += Environment.NewLine;
+		// Form initialization on load
+		private void FormPatch_Load(object _sender, EventArgs _e)
+		{
+			// Set message box title
+			URTException.MsgBoxTitle = this.Text;
 
-			text += "[System.Reflection.Assembly.GetCallingAssembly().Location]";
-			text += Environment.NewLine;
-			text += System.Reflection.Assembly.GetCallingAssembly().Location;
-			text += Environment.NewLine;
-
-			text += "[Application.ExecutablePath]";
-			text += Environment.NewLine;
-			text += Application.ExecutablePath;
-			text += Environment.NewLine;
-
-			text += "[System.AppDomain.CurrentDomain.SetupInformation.ApplicationBase]";
-			text += Environment.NewLine;
-			text += System.AppDomain.CurrentDomain.SetupInformation.ApplicationBase;
-			text += Environment.NewLine;
-
-			text += "[System.AppDomain.CurrentDomain.BaseDirectory]";
-			text += Environment.NewLine;
-			text += System.AppDomain.CurrentDomain.BaseDirectory;
-			text += Environment.NewLine;
-
-			text += "[System.Environment.CurrentDirectory]";
-			text += Environment.NewLine;
-			text += System.Environment.CurrentDirectory;
-			text += Environment.NewLine;
-
-			// .NET 6+
-			//text += "[System.Environment.ProcessPath]";
-			//text += Environment.NewLine;
-			//text += System.Environment.ProcessorCount;
-			//text += Environment.NewLine;
-
-			//string filename = Application.StartupPath;
-			string filename = @"E:\skyro\VisualStudio\source\repos\Tikubiken\images";
-			filename += "\\" + "log.txt";
+			// XML Processor
 			try
 			{
-				File.WriteAllText(filename, text, Encoding.UTF8);
-			}
-			catch (Exception err)
-			{
-				MessageBox.Show(err.Message, "Error");
-			}
-			this.labelMessage.Text = filename + Environment.NewLine + text;
+				m_processor = new Processor(OperateProgress);
 
-			filename = @"E:\skyro\VisualStudio\source\repos\Tikubiken\images\\Update.exe";
-			totalsize = 85578608;
-			byte[] buff = new byte[totalsize];
-			using (FileStream fs = new FileStream(filename, FileMode.Open, FileAccess.Read))
-			{
-				fs.Seek(0x0265EF0F, SeekOrigin.Begin);
-				fs.Read(buff, 0, (int)totalsize - 0x0265EF0F);
-			}
+				// Search for the directory where the patch will be applied to
+				// Run asynchronous operation, but not wait to complete
+				// *** DO NOT await the returned Task instance(=nowait) ***
+				Task nowait = m_processor.DetermineLocation();
 
-			filename = @"E:\skyro\VisualStudio\source\repos\Tikubiken\images\\1.zip";
-			using (FileStream fs = new FileStream(filename, FileMode.Create, FileAccess.Write))
-			{
-				fs.Write(buff, 0, (int)totalsize - 0x0265EF0F);
-				fs.Flush();
-			}
+				// Set image by XML definition
+				var image = m_processor.GetCoverImage();
+				if ( image != null ) this.pictureBox.Image = image;
 
-			filename = @"E:\skyro\VisualStudio\source\repos\Tikubiken\images\\Update.exe";
-			using (FileStream fs = new FileStream(filename, FileMode.Open, FileAccess.Read))
-			{
-				fs.Seek(0x0265FFEF, SeekOrigin.Begin);
-				fs.Read(buff, 0, (int)totalsize - 0x0265FFEF);
-			}
+				// Set window caption by XML definition
+				string str = m_processor.GetTitleCaption();
+				if ( str != null ) URTException.MsgBoxTitle = this.Text = str;
 
-			filename = @"E:\skyro\VisualStudio\source\repos\Tikubiken\images\\2.zip";
-			using (FileStream fs = new FileStream(filename, FileMode.Create, FileAccess.Write))
+				// Set UI labels by XML definition
+				str = m_processor.GetLocalisedUI("progress");
+				if (str != null) labelProgress.Text = str;
+				SetupStartButton( ButtonUsage.Start, false );	// Window appears with disabled [Start] button
+			}
+			catch ( URTException urte )
 			{
-				fs.Write(buff, 0, (int)totalsize - 0x0265FFEF);
-				fs.Flush();
+				urte.MsgBox();
+				Unpacked.GetInstance().ErrorReport(urte.ToString(), "FormPatch_Load:User Runtime");
+				this.Close();		// close window to exit application
+				return;
+			}
+			catch
+			{
+				throw;
 			}
 		}
 
-		private void FormPatch_Load(object sender, EventArgs e)
+		// Form is ready to accept user operation
+		private void FormReady()
 		{
-			this.pictureBox.Image = System.Drawing.Image.FromFile(@"E:\skyro\Dropbox\Searothonc\SG001A1\英語版withHabisain\tikubiken\cover_images\cover-640x160-jp.png");
+			// Set title bar caption as detailed title text
+			string str = m_processor.GetMessageTextByTypeName("title");
+			if ( str != null ) this.Text = str;
+
+			// Check if there is enough disk space
+			long requiredSize = m_processor.GetPatchBalance();
+			string root = m_processor.SourceDir.FullName;
+			DriveInfo drive = new DriveInfo( root );
+			if ( requiredSize > drive.TotalFreeSpace )
+			{
+				ShowXMLMessage("err_shortspace", $"{Resources.error_shortdiskspace}[{root}]");
+				return;
+			}
+			// For using unpacked directory as working space, 
+			// there is needed extra free space to store patch applied files
+			root = Unpacked.GetInstance().PatchXML.DirectoryName;
+			drive = new DriveInfo( root );
+			if ( requiredSize > drive.TotalFreeSpace )
+			{
+				ShowXMLMessage("err_shortspace", $"{Resources.error_shortdiskspace}[{root}]");
+				return;
+			}
+
+			// Enable UI and show message when ready
+			SetupStartButton( ButtonUsage.Start, true );
+			ShowXMLMessage("ready", Resources.msg_ready);
 		}
-	}
+
+		//------------------------------------------------------------
+		// [Start] button
+		//------------------------------------------------------------
+
+		// Setup start button
+		private void SetupStartButton(ButtonUsage usage, bool enabled)
+		{
+			buttonUsage = usage;
+
+			// Set button label as cancel
+			string str = m_processor.GetLocalisedUI(usage.ToString().ToLower());
+			buttonStart.Text = str ?? usage switch {
+													ButtonUsage.Start		=> Resources.button_start,
+													ButtonUsage.Cancel		=> Resources.button_cancel,
+													ButtonUsage.Exit		=> Resources.button_exit,
+													ButtonUsage.Processing	=> Resources.button_processing,
+													_	=> throw new URTException($"No such button usage type:{usage}")
+												};
+			buttonStart.Enabled = enabled;
+		}
+
+		// When [Start] button clicked
+		private async void buttonStart_Click(object _sender, EventArgs _e)
+		{
+			switch ( buttonUsage )
+			{
+				case ButtonUsage.Start:
+					try
+					{
+						// Initial synchronous operations
+						ShowXMLMessage("process", Resources.msg_process);	// Set message a text indicates being in process
+
+						// Assign button to cancel and set disabled to do some initial task synchronously
+						SetupStartButton( ButtonUsage.Cancel, false );
+
+						// As a result of initial task, set up progress bar parameters
+						(countMax, progressBar.Maximum) = m_processor.Ready(Unpacked.GetInstance().PatchXML.Directory);
+						progressBar.Minimum = 0;
+						progressBar.Value   = 0;
+
+						// [Cancel] button is now able to use
+						buttonStart.Enabled = true;
+/*
+#if	DEBUG
+						Unpacked.GetInstance().ErrorReport(m_processor.ReportBatch(), "Diagnostics");
+#endif
+*/
+						// Runs asynchronous operations
+						await m_processor.RunAsync();
+
+						// Write result files to target directory asynchronously
+						SetupStartButton( ButtonUsage.Processing, false );
+						await m_processor.WriteResultAsync();
+
+						// Operation complete
+						ShowXMLMessage("complete", Resources.msg_complete );
+					}
+					catch (OperationCanceledException)
+					{
+						ShowXMLMessage("cancel", Resources.msg_cancel );
+					}
+					catch ( Exception e )
+					{
+						Unpacked.GetInstance().ErrorReport(e.ToString(), "Start button:catch all");
+						ShowXMLMessage("error", Resources.error_abort);
+					}
+					finally
+					{
+						SetupStartButton( ButtonUsage.Exit, true );
+					}
+					break;
+				case ButtonUsage.Cancel:
+					CancelOperation();
+					break;
+				case ButtonUsage.Exit:
+					this.Close();		// close window to exit application
+					break;
+			}
+		}
+
+		// Operation to cancel async task
+		private void CancelOperation()
+		{
+			// Cancel only when cancellation token exists.
+			if ( m_processor == null ) return;
+			m_processor.Cancel();
+		}
+
+		//------------------------------------------------------------
+		// Progress bar
+		//------------------------------------------------------------
+
+		// Reflecting progress in the UIs
+		private void OperateProgress(ProgressState state)
+		{
+			if ( state.IsValueAvailable() ) progressBar.Value = state.Value;
+			if ( state.IsTextAvailable() ) ShowMessage( state.Text );
+			if ( state.IsCountAvailable() ) UpdateMessageCount( state.Count );
+			if ( state.HasCompletedSuccess() ) FormReady();
+			if ( state.HasFailed() ) FailedToInitialLocate();
+		}
+
+		// Failed to DetermineLocation()
+		private void FailedToInitialLocate()
+		{
+			if ( m_processor.IsNewestFound )
+			{
+				// If the newest version has been found, tell the user there's no need to update
+				ShowXMLMessage("err_newest", Resources.error_newest);
+			}
+			else
+			{
+				// If any versions specified in XML are not found, notify it
+				ShowXMLMessage("err_misplace", Resources.error_misplace);
+			}
+
+			// Show exit button to close application
+			SetupStartButton( ButtonUsage.Exit, true );
+		}
+
+		//------------------------------------------------------------
+		// Message Label
+		//------------------------------------------------------------
+
+		private void ShowMessage(string msg)
+		{
+			if ( !string.IsNullOrEmpty(msg) ) strMessage = msg;
+			msg = 	strMessage + System.Environment.NewLine +
+					(string.IsNullOrEmpty(strState) ? "" : strState) + System.Environment.NewLine +
+					"";
+			labelMessage.Text = msg;
+		}
+
+		private void UpdateMessageCount( int count )
+		{
+			countCurrent = count;
+			strState = $"({countCurrent}/{countMax})";
+			ShowMessage(null);
+		}
+
+		/// <summary> Show message defined in XML</summary>
+		/// <param name="typeAttr">
+		///	(string)Type name specified in "type" attribute of &lt;text&gt; element.
+		///	</param>
+		private void ShowXMLMessage(string typeAttr, string strDefault)
+			=> ShowMessage( m_processor.GetMessageTextByTypeName(typeAttr) ?? strDefault );
+
+		//------------------------------------------------------------
+		// UI statuses
+		//------------------------------------------------------------
+
+
+	}	// ---- public partial class FormPatch : Form ----------------
 }

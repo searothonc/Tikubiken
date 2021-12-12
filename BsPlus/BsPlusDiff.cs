@@ -31,7 +31,7 @@ namespace BsPlus
 		/// <param name="Progress">Progress reporting action. Or null if not needed to report progress.</param>
 		//public static void Create(byte[] oldData, byte[] newData, Stream output)
 		public static void Create(byte[] oldData, byte[] newData, Stream output, CompressionLevel compLv=CompressionLevel.Optimal, 
-		CancellationToken? cToken=null, IProgress<float> Progress=null)
+		CancellationToken cToken=default, IProgress<float> Progress=null)
 		{
 			// check arguments
 			if (oldData == null)
@@ -400,7 +400,7 @@ namespace BsPlus
 			}
 		}
 
-		private static int[] SuffixSort(byte[] oldData, CancellationToken? cToken, IProgress<float> Progress)
+		private static int[] SuffixSort(byte[] oldData, CancellationToken cToken, IProgress<float> Progress)
 		{
 			int[] buckets = new int[256];
 

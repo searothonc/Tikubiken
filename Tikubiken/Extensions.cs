@@ -20,6 +20,8 @@ namespace Tikubiken
 
 	public enum DeltaFormat
 	{
+		None							= 0,
+
 		// Delta Encoding
 		Encoding_Mask					= 0xFF,
 		Encoding_VCDiff					= 0x01,
@@ -59,32 +61,11 @@ namespace Tikubiken
 	};
 
 	//============================================================
-	// Interface: ICoder
-	//============================================================
-
-	public interface ICoder
-	{
-		public DeltaFormat Format { get; set; }
-
-		public Task DoAsync( byte[] binSource, 			// old file for both enc and dec
-							 byte[] binTarget, 			// new file for enc/delta file for dec
-							 FileInfo fiOutput, 		// delta file for enc/rebuilt file for dec
-							 CancellationToken cToken,	// Cancellation token
-							 Progress<float> progress	// where progress will be reported to as a value of 0.0f - 1.0f
-							);
-	}
-
-	//============================================================
 	// Static methods for asynchronous operations
 	//============================================================
 
 	static class Ext
 	{
-		// Asynchrous operations
-		public static void Advance( IProgress<float> Progress, float position ) => Progress?.Report( position );
-		public static void AcceptCancel(CancellationToken  cToken) => cToken.ThrowIfCancellationRequested();
-		public static void AcceptCancel(CancellationToken? cToken) => cToken?.ThrowIfCancellationRequested();
-
 #if DEBUG
 		private const string strAltTempRoot = @"..\..\..\..\test_data\temp";
 #endif
@@ -99,6 +80,33 @@ namespace Tikubiken
 		// Filename for license document
 		public const string LicenseMD	= @"LICENSE.md";
 
+		//------------------------------------------------------------
+		// Asynchronous operations
+		//------------------------------------------------------------
+		public static void Advance( IProgress<float> Progress, float position ) => Progress?.Report( position );
+		public static void AcceptCancel(CancellationToken  cToken) => cToken.ThrowIfCancellationRequested();
+
+		/// <summary>Calcurate hash digest asynchronously</summary>
+		/// <param name="fiTarget">(FileInfo)File to compute hash value.</param>
+		/// <param name="algorithm">(string)Algorithm name. "MD5" or "SHA1"</param>
+		/// <returns>(string)Hash value in hexa-decimal string.</returns>
+		public static async Task<string> CaclDigestAsync(FileInfo fiTarget, string algorithm = "SHA1")
+		{
+			// Hash value buffer
+			byte[] binData;
+
+			// Calculate digest by file stream
+			using ( var fs = fiTarget.Open(FileMode.Open,FileAccess.Read,FileShare.Read) )
+			using ( var hasher = System.Security.Cryptography.HashAlgorithm.Create(algorithm) )
+			{
+				if ( hasher == null ) throw new InvalidOperationException("Invalid hash algorithm.");
+				//binData = await hasher.ComputeHashAsync( fs, cToken );	// async ver is not available yet in .NET core 3.1
+				binData = await Task.Run<byte[]>( ()=> hasher.ComputeHash(fs) );
+			}
+
+
+			return BitConverter.ToString(binData).ToLower().Replace("-","");
+		}
 
 		//------------------------------------------------------------
 		// Unpack lisense document
@@ -169,7 +177,6 @@ namespace Tikubiken
 			return path;
 		}
 
-
 		//------------------------------------------------------------
 		// Extension methods for TBPHeader
 		//------------------------------------------------------------
@@ -215,12 +222,30 @@ namespace Tikubiken
 				writer.Write(buf);
 			}
 		}
-	}
+
+		//------------------------------------------------------------
+		// Debug console log to file
+		//------------------------------------------------------------
+
+		// Conditional initialyzation
+		[Conditional("DEBUG_LOG_TO_FILE")]
+		public static void SetDebugLogToFile()
+		{
+			string log_file = System.Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory) + @"\debug.txt";
+			StreamWriter sw = new StreamWriter(log_file);
+			sw.AutoFlush = true;
+			TextWriter tw = TextWriter.Synchronized(sw);
+			TextWriterTraceListener twtl = new TextWriterTraceListener(tw, "LogFile");
+			Trace.Listeners.Add(twtl);
+			string nowtime = DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss");
+			Debug.WriteLine($"[Started: {nowtime}]");
+		}
+	}	//-- static class Ext ------------------------------------
 
 	//============================================================
 	// Header structure for archived patch file
 	//============================================================
-	 [StructLayout(LayoutKind.Sequential, Pack = 1)]
+	[StructLayout(LayoutKind.Sequential, Pack = 1)]
 	public struct TBPHeader
 	{
 		// Constants
@@ -297,6 +322,85 @@ namespace Tikubiken
 			if ( this._HeaderSize	!= TBPHeader.Size			) return false;
 			return true;
 		}
-	}
+	}	// -- public struct TBPHeader --------------------------------
+
+	//============================================================
+	// Value conteiner for progress-related message
+	//============================================================
+
+	/// <summary>
+	/// Value container used in async message of Progress<T>
+	/// adaptable for both text logging and Progress control
+	/// </summary>
+	public struct ProgressState
+	{
+		public enum Op
+		{
+			None				= 0,
+
+			Progress			= 0x01,
+			Log					= 0x02,
+			Both				= Progress|Log,
+			Count				= 0x04,
+			ControlMask			= 0xFF,
+
+			Complete			= 0x1000,
+			True				= 0x0100,
+			False				= 0x0000,
+			Sucess				= Complete|True,
+			Failed				= Complete|False,
+		}
+
+		public enum Phase	// report in int at Size property
+		{
+			None,
+			Prestart,
+			Ready,
+		}
+
+		// Fields
+		//------------------------------
+		//private int		_value;
+		//private string	_text;
+
+		// Propeerties
+		//------------------------------
+		public Op		Usage;
+		public int		Min;
+		public int		Max;
+		public int		Value;
+		public string	Text;
+		public int		Anchor;		// anchor point for calc by percentage
+		public int		Size;		// file size for calc by percentage
+		public int		Count;
+
+		// Value availability
+		//------------------------------
+		/// <summary>
+		/// Check if the value is available.
+		/// </summary>
+		public bool IsValueAvailable() => (Usage & Op.Progress) != 0;
+
+		/// <summary>
+		/// Check if the text is available.
+		/// </summary>
+		public bool IsTextAvailable() => (Usage & Op.Log) != 0;
+
+		/// <summary>
+		/// Check if the count is available.
+		/// </summary>
+		public bool IsCountAvailable() => (Usage & Op.Count) != 0;
+
+		/// <summary>
+		/// Check if task has completed successfuly.
+		/// </summary>
+		public bool HasCompletedSuccess() => Usage == Op.Sucess;
+
+		/// <summary>
+		/// Check if task has failed.
+		/// </summary>
+		public bool HasFailed() => Usage == Op.Failed;
+
+	}	// ---- public struct ProgressState ----------------------------
 }
 

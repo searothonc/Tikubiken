@@ -1,6 +1,4 @@
-﻿#define DEBUG_LOG_TO_FILE
-
-using System;
+﻿using System;
 using System.Diagnostics;
 using System.IO;
 using System.Windows.Forms;
@@ -47,9 +45,6 @@ namespace Tikubiken
 		// Form initialization on load
 		private void FormDiff_Load(object sender, EventArgs e)
 		{
-			// Conditionally, set debug log being outputted into the file
-			SetDebugLogToFile();
-
 			// Application Manager
 			myApp = new Tikubiken.MyApp();
 
@@ -81,24 +76,6 @@ namespace Tikubiken
 		{
 			// Save changes to ini file
 			myApp.IniSave();
-		}
-
-		//------------------------------------------------------------
-		// Debug
-		//------------------------------------------------------------
-
-		// Conditional initialyzation
-		[Conditional("DEBUG_LOG_TO_FILE")]
-		private void SetDebugLogToFile()
-		{
-			string log_file = System.Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory) + @"\debug.txt";
-			StreamWriter sw = new StreamWriter(log_file);
-			sw.AutoFlush = true;
-			TextWriter tw = TextWriter.Synchronized(sw);
-			TextWriterTraceListener twtl = new TextWriterTraceListener(tw, "LogFile");
-			Trace.Listeners.Add(twtl);
-			string nowtime = DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss");
-			Debug.WriteLine($"[Started: {nowtime}]");
 		}
 
 		//------------------------------------------------------------
@@ -139,11 +116,12 @@ namespace Tikubiken
 		// [File] button for Output
 		private void buttonOutput_Click(object sender, EventArgs e)
 		{
-			using (SaveFileDialog dlg = new SaveFileDialog()) {
-				// dlg.Title = "Open File";
+			using (SaveFileDialog dlg = new SaveFileDialog() ) {
+				// dlg.Title = "Save as";
 				dlg.InitialDirectory = myApp.LastOut;
 				dlg.Filter = Resources.ofd_out_filter;
-				dlg.DefaultExt = "*.tbp";
+				dlg.DefaultExt = "*.exe";
+				dlg.OverwritePrompt=false;
 
 				if (dlg.ShowDialog() == DialogResult.OK) {
 					// dialog closed by [OK] button
@@ -238,7 +216,10 @@ namespace Tikubiken
 		{
 			if ( m_processor == null )
 			{
-				//Debug.WriteLine( "[Start] button" );
+				// Overwrite prompt
+				if ( File.Exists(textBoxOutput.Text) )
+				{
+				}
 
 				// Disable [Start] button first
 				DisableStartButton();
@@ -346,8 +327,12 @@ namespace Tikubiken
 			progressBar.Value = 0;
 		}
 
+		//------------------------------------------------------------
+		// Progress bar
+		//------------------------------------------------------------
+
 		// Reflecting progress in the UIs
-		private void OperateProgress(Processor.ProgressState state)
+		private void OperateProgress(ProgressState state)
 		{
 			//Debug.WriteLine( $"Usage = {state.Usage}" );
 			if ( state.IsValueAvailable() )
@@ -363,7 +348,3 @@ namespace Tikubiken
 		}
 	}
 }
-/*
-・[x]押下時にクリーンナップするのではなく、[x]を押せなくする案
-◎クリーンナップは常に同じ処理をする案(テンポラリディレクトリを丸ごと消す)
-*/

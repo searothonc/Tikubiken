@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace Update.Properties {
+namespace Tikubiken.Properties {
     using System;
     
     
@@ -39,7 +39,7 @@ namespace Update.Properties {
         internal static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Update.Properties.Resources", typeof(Resources).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Tikubiken.Properties.Resources", typeof(Resources).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
@@ -71,12 +71,147 @@ namespace Update.Properties {
         }
         
         /// <summary>
+        ///   &amp;Cancel に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        internal static string button_cancel {
+            get {
+                return ResourceManager.GetString("button_cancel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   &amp;Exit に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        internal static string button_exit {
+            get {
+                return ResourceManager.GetString("button_exit", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Processing... に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        internal static string button_processing {
+            get {
+                return ResourceManager.GetString("button_processing", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   &amp;Start に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        internal static string button_start {
+            get {
+                return ResourceManager.GetString("button_start", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   型 System.Drawing.Bitmap のローカライズされたリソースを検索します。
         /// </summary>
         internal static System.Drawing.Bitmap cover_update {
             get {
                 object obj = ResourceManager.GetObject("cover-update", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Update aborted for an error occured. に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        internal static string error_abort {
+            get {
+                return ResourceManager.GetString("error_abort", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Corrupted patch data. に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        internal static string error_corruptarchive {
+            get {
+                return ResourceManager.GetString("error_corruptarchive", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Patch data is not found. に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        internal static string error_extract {
+            get {
+                return ResourceManager.GetString("error_extract", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Not found the destination directory of installation. に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        internal static string error_misplace {
+            get {
+                return ResourceManager.GetString("error_misplace", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Error に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        internal static string error_msgbox {
+            get {
+                return ResourceManager.GetString("error_msgbox", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Already newest version. に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        internal static string error_newest {
+            get {
+                return ResourceManager.GetString("error_newest", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Not enough disk space. に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        internal static string error_shortdiskspace {
+            get {
+                return ResourceManager.GetString("error_shortdiskspace", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Update cancelled. Please close the application. に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        internal static string msg_cancel {
+            get {
+                return ResourceManager.GetString("msg_cancel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Completed. に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        internal static string msg_complete {
+            get {
+                return ResourceManager.GetString("msg_complete", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Updating... に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        internal static string msg_process {
+            get {
+                return ResourceManager.GetString("msg_process", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Click [Start] button to start updating. に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        internal static string msg_ready {
+            get {
+                return ResourceManager.GetString("msg_ready", resourceCulture);
             }
         }
     }

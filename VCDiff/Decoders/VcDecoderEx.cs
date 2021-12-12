@@ -239,12 +239,14 @@ namespace VCDiff.Decoders
         /// For large outputs, this may be beneficial.
         /// </summary>
         /// <returns></returns>
-        public async Task<(VCDiffResult result, long bytesWritten)> DecodeAsync()
+        public async Task<(VCDiffResult result, long bytesWritten)> DecodeAsync(System.Threading.CancellationToken cToken, Progress<float> progress)
         {
             if (!Decode_Init(out var bytesWritten, out var result, out var decodeAsync)) 
                 return decodeAsync;
             while (delta.CanRead)
             {
+				Tikubiken.Ext.AcceptCancel(cToken);
+
                 //delta is streamed in order aka not random access
                 using var w = new WindowDecoder<TDeltaBuffer>(source.Length, delta, maxTargetFileSize);
 
@@ -255,7 +257,8 @@ namespace VCDiff.Decoders
                     {
                         //interleaved
                         //decodedinterleave actually has an internal loop for waiting and streaming the incoming rest of the interleaved window
-                        result = await body.DecodeInterleaveAsync();
+                        result = await body.DecodeInterleaveAsync(cToken);
+						Tikubiken.Ext.AcceptCancel(cToken);
 
                         if (result != VCDiffResult.SUCCESS && result != VCDiffResult.EOD)
                             return (result, bytesWritten);
@@ -270,7 +273,8 @@ namespace VCDiff.Decoders
                         //not interleaved
                         //expects the full window to be available
                         //in the stream
-                        result = await body.DecodeAsync();
+                        result = await body.DecodeAsync(cToken);
+						Tikubiken.Ext.AcceptCancel(cToken);
 
                         if (result != VCDiffResult.SUCCESS)
                             return (result, bytesWritten);

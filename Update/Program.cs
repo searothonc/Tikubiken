@@ -1,15 +1,13 @@
+#define DEBUG_LOG_TO_FILE
+
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
-using System.Diagnostics;
-//using System.Management;
+using Tikubiken.Properties;
 
 namespace Tikubiken
 {
-	static class Program
+    static class Program
 	{
 		/// <summary>
 		///  The main entry point for the application.
@@ -17,52 +15,52 @@ namespace Tikubiken
 		[STAThread]
 		static void Main()
 		{
-			ExtractData();
-			ShowForm();
+			AbortableMain();
+		}
+
+		//--------------------------------------------------------
+		// Abortable main operation
+		//--------------------------------------------------------
+		private static void AbortableMain()
+		{
+			// Conditionally, set debug log being outputted into the file
+			Ext.SetDebugLogToFile();
+
+			// Extract data from executable file
+			Unpacked unpacked;
+			try
+			{
+				unpacked = Unpacked.GetInstance();
+			}
+			catch ( URTException urte )
+			{
+				urte.MsgBox(Resources.error_msgbox);
+				return;
+			}
+
+			// Run IDE generated Windows form operation
+			try
+			{
+				RunForm();
+			}
+			catch ( Exception e )
+			{
+				unpacked.ErrorReport(e.ToString(), "Outmost:catch all");
+#if	DEBUG
+				throw;
+#endif
+			}
 		}
 
 		//--------------------------------------------------------
 		// Windows form
 		//--------------------------------------------------------
-		static void ShowForm()
+		static void RunForm()
 		{
 			Application.SetHighDpiMode(HighDpiMode.SystemAware);
 			Application.EnableVisualStyles();
 			Application.SetCompatibleTextRenderingDefault(false);
 			Application.Run(new FormPatch());
 		}
-
-		//--------------------------------------------------------
-		// Extract data from executable file
-		//--------------------------------------------------------
-		private static void ExtractData()
-		{
-			var proc = Process.GetCurrentProcess();
-			MessageBox.Show(proc.MainModule.FileName, "TEST", MessageBoxButtons.OK, MessageBoxIcon.Information);
-		}
-
-		//--------------------------------------------------------
-		// Get parent process info
-		//--------------------------------------------------------
-/*
-		private static Process GetParentProcess()
-		{
-			var procId = Process.GetCurrentProcess().Id;
-			string query = $"SELECT ParentProcessId FROM Win32_Process WHERE ProcessId={procId}";
-			int parentProcId;
-
-			using ( var s = new ManagementObjectSearcher(@"root\CIMV2", query) )
-			using ( var results = s.Get().GetEnumerator() )
-			{
-
-				if (!results.MoveNext()) throw new ApplicationException("Couldn't Get ParrentProcessId.");
-
-				var queryResult = results.Current;
-				parentProcId = (int) queryResult["ParentProcessId"];
-			}
-
-			return Process.GetProcessById( parentProcId );
-		}
-*/
 	}
 }

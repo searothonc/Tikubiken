@@ -4,18 +4,23 @@
     <OutputType>WinExe</OutputType>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <UseWindowsForms>true</UseWindowsForms>
-    <ApplicationIcon>Resources\update.ico</ApplicationIcon>
+    <ApplicationIcon></ApplicationIcon>
     <Copyright>Copyright 2021 © Searothonc</Copyright>
     <Authors>Searothonc</Authors>
     <Company>Searothonc</Company>
     <Description>A self-extracting binary patch utility.</Description>
     <AssemblyName>Update</AssemblyName>
-    <RootNamespace>Update</RootNamespace>
+    <RootNamespace>Tikubiken</RootNamespace>
+    <Nullable>annotations</Nullable>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <DebugType>none</DebugType>
     <DebugSymbols>false</DebugSymbols>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <ItemGroup>
@@ -25,16 +30,40 @@
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="Resources\cover-update.jpg" />
-    <EmbeddedResource Include="Resources\update.ico" />
+    <Compile Include="..\BsPlus\BsPlusCommon.cs" Link="BsPlus\BsPlusCommon.cs" />
+    <Compile Include="..\BsPlus\BsPlusPatch.cs" Link="BsPlus\BsPlusPatch.cs" />
+    <Compile Include="..\Tikubiken\Extensions.cs" Link="Extensions.cs" />
+    <Compile Include="..\VCDiff\Decoders\BodyDecoder.cs" Link="VCDiff\Decoders\BodyDecoder.cs" />
+    <Compile Include="..\VCDiff\Decoders\CustomCodeTableDecoder.cs" Link="VCDiff\Decoders\CustomCodeTableDecoder.cs" />
+    <Compile Include="..\VCDiff\Decoders\InstructionDecoder.cs" Link="VCDiff\Decoders\InstructionDecoder.cs" />
+    <Compile Include="..\VCDiff\Decoders\VcDecoderEx.cs" Link="VCDiff\Decoders\VcDecoderEx.cs" />
+    <Compile Include="..\VCDiff\Decoders\WindowDecoder.cs" Link="VCDiff\Decoders\WindowDecoder.cs" />
+    <Compile Include="..\VCDiff\Includes\Include.cs" Link="VCDiff\Include.cs" />
+    <Compile Include="..\VCDiff\Shared\AddressCache.cs" Link="VCDiff\Shared\AddressCache.cs" />
+    <Compile Include="..\VCDiff\Shared\Adler32.cs" Link="VCDiff\Shared\Adler32.cs" />
+    <Compile Include="..\VCDiff\Shared\ByteBuffer.cs" Link="VCDiff\Shared\ByteBuffer.cs" />
+    <Compile Include="..\VCDiff\Shared\ByteStreamReader.cs" Link="VCDiff\Shared\ByteStreamReader.cs" />
+    <Compile Include="..\VCDiff\Shared\Checksum.cs" Link="VCDiff\Shared\Checksum.cs" />
+    <Compile Include="..\VCDiff\Shared\ChecksumFormat.cs" Link="VCDiff\Shared\ChecksumFormat.cs" />
+    <Compile Include="..\VCDiff\Shared\CodeTable.cs" Link="VCDiff\Shared\CodeTable.cs" />
+    <Compile Include="..\VCDiff\Shared\Extensions.cs" Link="VCDiff\Shared\Extensions.cs" />
+    <Compile Include="..\VCDiff\Shared\IByteBuffer.cs" Link="VCDiff\Shared\IByteBuffer.cs" />
+    <Compile Include="..\VCDiff\Shared\NativeAllocation.cs" Link="VCDiff\Shared\NativeAllocation.cs" />
+    <Compile Include="..\VCDiff\Shared\PinnedArrayRental.cs" Link="VCDiff\Shared\PinnedArrayRental.cs" />
+    <Compile Include="..\VCDiff\Shared\Pool.cs" Link="VCDiff\Shared\Pool.cs" />
+    <Compile Include="..\VCDiff\Shared\VarIntBE.cs" Link="VCDiff\Shared\VarIntBE.cs" />
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Update="Properties\Resources.Designer.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Resources.resx</DependentUpon>
-    </Compile>
+    <EmbeddedResource Include="Resources\cover-update.jpg" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="..\LICENSE.md" Link="Resources\LICENSE.md" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="..\dtd\tikubiken_patch100.dtd" Link="Resources\tikubiken_patch100.dtd" />
   </ItemGroup>
 
   <ItemGroup>
@@ -42,6 +71,15 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="BsPlus\" />
+    <Folder Include="VCDiff\Decoders\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.IO.RecyclableMemoryStream" Version="2.2.0" />
   </ItemGroup>
 
 </Project>

@@ -50,7 +50,7 @@ namespace VCDiff.Encoders
         /// </summary>
         /// <param name="newData">the target data</param>
         /// <param name="outputStream">the out stream</param>
-        public unsafe void EncodeChunk(ByteBuffer newData, Stream outputStream, System.Threading.CancellationToken? cToken=null )
+        public unsafe void EncodeChunk(ByteBuffer newData, Stream outputStream, System.Threading.CancellationToken cToken=default )
         {
             newData.Position = 0;
             var checksumBytes = newData.ReadBytesAsSpan((int)newData.Length);

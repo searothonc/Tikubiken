@@ -121,7 +121,52 @@
   <data name="app_icon" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\resources\update.ico;System.Drawing.Icon, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="button_cancel" xml:space="preserve">
+    <value>&amp;Cancel</value>
+  </data>
+  <data name="button_exit" xml:space="preserve">
+    <value>&amp;Exit</value>
+  </data>
+  <data name="button_processing" xml:space="preserve">
+    <value>Processing...</value>
+  </data>
+  <data name="button_start" xml:space="preserve">
+    <value>&amp;Start</value>
+  </data>
   <data name="cover-update" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\cover-update.jpg;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="error_abort" xml:space="preserve">
+    <value>Update aborted for an error occured.</value>
+  </data>
+  <data name="error_corruptarchive" xml:space="preserve">
+    <value>Corrupted patch data.</value>
+  </data>
+  <data name="error_extract" xml:space="preserve">
+    <value>Patch data is not found.</value>
+  </data>
+  <data name="error_misplace" xml:space="preserve">
+    <value>Not found the destination directory of installation.</value>
+  </data>
+  <data name="error_msgbox" xml:space="preserve">
+    <value>Error</value>
+  </data>
+  <data name="error_newest" xml:space="preserve">
+    <value>Already newest version.</value>
+  </data>
+  <data name="error_shortdiskspace" xml:space="preserve">
+    <value>Not enough disk space.</value>
+  </data>
+  <data name="msg_cancel" xml:space="preserve">
+    <value>Update cancelled. Please close the application.</value>
+  </data>
+  <data name="msg_complete" xml:space="preserve">
+    <value>Completed.</value>
+  </data>
+  <data name="msg_process" xml:space="preserve">
+    <value>Updating...</value>
+  </data>
+  <data name="msg_ready" xml:space="preserve">
+    <value>Click [Start] button to start updating.</value>
   </data>
 </root>

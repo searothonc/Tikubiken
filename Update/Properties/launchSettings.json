@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "Update": {
+      "commandName": "Project",
+      "commandLineArgs": "/NoUnpack=E:\\skyro\\VisualStudio\\source\\repos\\Tikubiken\\test_data\\temp\\TestUnpack"
+    }
+  }
+}

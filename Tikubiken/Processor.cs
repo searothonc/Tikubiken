@@ -41,53 +41,6 @@ namespace Tikubiken
 		// System ID URIs of DTD for patch
 		private const string c_uriDTDpatch		= @"https://raw.githubusercontent.com/searothonc/Tikubiken/master/dtd/tikubiken_patch100.dtd";
 
-
-		//============================================================
-		// Inner class: ProgressState
-		//============================================================
-
-		/// <summary>
-		/// Value container used in async message of Progress<T>
-		/// adaptable for both text logging and Progress control
-		/// </summary>
-		public struct ProgressState
-		{
-			public enum Op
-			{
-				None		=	0,
-				Progress	=	0x01,
-				Log			=	0x02,
-				Both		=	Progress|Log
-			}
-
-			// Fields
-			//------------------------------
-			//private int		_value;
-			//private string	_text;
-
-			// Propeerties
-			//------------------------------
-			public Op		Usage;
-			public int		Min;
-			public int		Max;
-			public int		Value;
-			public string	Text;
-			public int		Anchor;		// anchor point for calc by percentage
-			public int		Size;		// file size for calc by percentage
-
-			// Value availability
-			//------------------------------
-			/// <summary>
-			/// Check if the value is available.
-			/// </summary>
-			public bool IsValueAvailable() => (Usage & Op.Progress) != 0;
-
-			/// <summary>
-			/// Check if the text is available.
-			/// </summary>
-			public bool IsTextAvailable() => (Usage & Op.Log) != 0;
-		}
-
 		//============================================================
 		// Batch operation
 		//============================================================
@@ -120,7 +73,8 @@ namespace Tikubiken
 			public DirectoryInfo	DirFrom		{ get => fsiFrom as DirectoryInfo;	set => fsiFrom = value; }
 			public DirectoryInfo	DirTo		{ get => fsiTo   as DirectoryInfo;	set => fsiTo   = value; }
 			public string			Id			{ get; protected set; }
-			public string			Digest		{ get; protected set; }
+			public string			DigestSrc	{ get; set; }
+			public string			DigestDst	{ get; set; }
 
 			// Constructtors
 			//------------------------------
@@ -143,11 +97,19 @@ namespace Tikubiken
 			public Batch(string fileFrom, string fileTo, string fileDiff) 
 				=> init(new FileInfo(fileFrom), new FileInfo(fileTo), new FileInfo(fileDiff));
 
-			public Batch(FileInfo fileFrom, XElement e, XAttribute a)
-				=> (this.fsiFrom,this.fsiTo,this.Id,this.Operation,this.SizeKB) 
-					= (fileFrom, null, 
-						e.Attribute("version").Value, (a.Value == "MD5") ? Op.DigestMD5 : Op.DigestSHA1, 
-						(int)(fileFrom.Length/1024));
+			/*
+						public Batch(FileInfo fileFrom, XElement e, XAttribute a)
+							=> (this.fsiFrom,this.fsiTo,this.Id,this.Operation,this.SizeKB) 
+								= (fileFrom, null, 
+									e.Attribute("version").Value, (a.Value == "MD5") ? Op.DigestMD5 : Op.DigestSHA1, 
+									(int)(fileFrom.Length/1024));
+			*/
+			public Batch(FileInfo fileFrom, FileInfo fileTo, XElement e, XAttribute a)
+				=> (this.fsiFrom, this.fsiTo, this.Id, this.Operation, this.SizeKB)
+					= (fileFrom, fileTo,
+						e.Attribute("version").Value, (a.Value == "MD5") ? Op.DigestMD5 : Op.DigestSHA1,
+						(int)(fileFrom.Length / 1024L) + (int)(fileTo.Length / 1024L)   //considering precision matter
+					);
 
 			// Initialyze in case of CopyFile
 			private void init(FileInfo fileFrom, FileInfo fileTo)
@@ -180,10 +142,6 @@ namespace Tikubiken
 				if ( sum < 1 ) sum = 1;									// at least 1KB
 				this.SizeKB = (int) sum;								// sum of two for diff
 			}
-
-			// Methods
-			//------------------------------
-			public void SetHex(byte[] bin) => this.Digest = BitConverter.ToString(bin).ToLower().Replace("-","");
 		}
 
 		//============================================================
@@ -318,7 +276,8 @@ namespace Tikubiken
 		//--------------------------------------------------------
 
 		// URI for DTD
-		private readonly Uri uriDTD = new Uri("http://raw.githubusercontent.com/searothonc/Tikubiken/master/dtd/tikubiken_diff100.dtd");
+		private readonly Uri uriDTD   = new Uri( "http://raw.githubusercontent.com/searothonc/Tikubiken/master/dtd/tikubiken_diff100.dtd");
+		private readonly Uri uriDTD_s = new Uri("https://raw.githubusercontent.com/searothonc/Tikubiken/master/dtd/tikubiken_diff100.dtd");
 
 		// Progress<T>
 		private IProgress<ProgressState>	m_progress;
@@ -533,14 +492,14 @@ namespace Tikubiken
 		{
 			// Assembly currently running
 			var asm = Assembly.GetExecutingAssembly();
-
+/*
 #if DEBUG
 			// アセンブリに埋め込まれているすべてのリソースの論理名を取得して表示する
 			foreach (var _rname in asm.GetManifestResourceNames()) {
 				Debug.WriteLine(_rname);
 			}
 #endif
-
+*/
 			// Settings for XML Reader
 			var settings = new XmlReaderSettings();
 			settings.DtdProcessing					= DtdProcessing .Parse;
@@ -551,35 +510,37 @@ namespace Tikubiken
 			//settings.LinePositionOffset				= 1;
 			settings.ValidationType					= ValidationType.DTD;
 
+			string docDTD;
+			using ( var stream = asm.GetManifestResourceStream(c_ridDTDdiff) )
+			using ( var reader = new StreamReader(stream) )
+				docDTD = reader.ReadToEnd();
+
 			using ( var streamXML = fiSourceXML.OpenRead() )
 			{
-				using ( var streamDTD = asm.GetManifestResourceStream(c_ridDTDdiff) )
+
+				// In order to skip download DTD from URL,
+				// create resolver from same file in resource.
+				var resolver = new System.Xml.Resolvers.XmlPreloadedResolver();
+				resolver.Add(uriDTD,   docDTD);		// for http://...
+				resolver.Add(uriDTD_s, docDTD);		// and for https://...
+				settings.XmlResolver = resolver;
+
+				try
 				{
-					if ( streamDTD == null ) throw new ArgumentNullException();
-
-					// In order to skip download DTD from URL,
-					// create resolver from same file in resource.
-					var resolver = new System.Xml.Resolvers.XmlPreloadedResolver();
-					resolver.Add(uriDTD, streamDTD);
-					settings.XmlResolver = resolver;
-
-					try
-					{
-						// Load XML document
-						xmlDoc = XDocument.Load( XmlReader.Create(streamXML, settings), LoadOptions.SetLineInfo );
-					}
-					// Error found in validating by DTD throws System.Xml.Schema.XmlSchemaException
-					catch (System.Xml.Schema.XmlSchemaException e)
-					{
-						// Replace with user exception
-						throw new ErrorValidationFailed(e,fiSourceXML.FullName);
-					}
-					// Wrong DTD and other errors before validation throws XmlException
-					catch (XmlException e)
-					{
-						// Replace with user exception
-						throw new ErrorXmlException(e);
-					}
+					// Load XML document
+					xmlDoc = XDocument.Load( XmlReader.Create(streamXML, settings), LoadOptions.SetLineInfo );
+				}
+				// Error found in validating by DTD throws System.Xml.Schema.XmlSchemaException
+				catch (System.Xml.Schema.XmlSchemaException e)
+				{
+					// Replace with user exception
+					throw new ErrorValidationFailed(e,fiSourceXML.FullName);
+				}
+				// Wrong DTD and other errors before validation throws XmlException
+				catch (XmlException e)
+				{
+					// Replace with user exception
+					throw new ErrorXmlException(e);
 				}
 			}
 		}
@@ -765,16 +726,19 @@ namespace Tikubiken
 								 select e).First();
 				}
 
-				// "path" attribute value from <target> element under <patch> element
+				// "path" attribute value from <branch>/<target> element under <patch> element
+				string pathBranch = PathFromXML(elmPatch.Element("branch").Attribute("path").Value );
 				string pathTarget = PathFromXML(elmPatch.Element("target").Attribute("path").Value );
 
-				// Relative path from <target> path specified as <identity path="...">
+				// Relative path from <branch>/<target> path specified as <identity path="...">
 				string relPath = elmIdentity.Attribute("path").Value;
 
-				FileInfo fi = new FileInfo( JoinPath(pathTarget, relPath) );
-				if ( !fi.Exists ) throw new FileNotFoundException(null,fi.FullName);
+				FileInfo fiBranch = new FileInfo( JoinPath(pathBranch, relPath) );
+				if ( !fiBranch.Exists ) throw new FileNotFoundException(null,fiBranch.FullName);
+				FileInfo fiTarget = new FileInfo( JoinPath(pathTarget, relPath) );
+				if ( !fiTarget.Exists ) throw new FileNotFoundException(null,fiTarget.FullName);
 
-				listBatch.Add( new Batch(fi, elmPatch, elmIdentity.Attribute("method")) );
+				listBatch.Add( new Batch(fiBranch, fiTarget, elmPatch, elmIdentity.Attribute("method")) );
 			}
 		}
 
@@ -811,8 +775,9 @@ namespace Tikubiken
 				(sizeBranch, sizeTarget) = ParseXML_CompareDirectory(dirResult, ".", 
 						elmPatch, strBranchPath, ignoreBranch, strTargetPath, ignoreTarget);
 
-				// Write size differences between branch and target to XML
-				elmPatch.Add( new XAttribute("balance", sizeTarget>sizeBranch ? sizeTarget-sizeBranch : 0) );
+				// Write size differences between branch and target to XML (as real byte, not cluster or KB)
+				elmPatch.Add( new XAttribute("balance", 
+					(sizeTarget>sizeBranch ? sizeTarget-sizeBranch : 0) * TBPHeader.ClusterSize) );
 
 				// Remove <branch><target> element from XML
 				elmBranch.Remove();
@@ -1259,27 +1224,10 @@ namespace Tikubiken
 		private async Task CaclDigestAsync(Batch op)
 		{
 			ReportMessage(Resources.log_digest + op.FileFrom.Name);
-
-			// Hash value buffer
-			byte[] binData;
-
-			// Choosen algorithm
-			string algo = (op.Operation == Batch.Op.DigestMD5) ? "MD5" : "SHA1";
-
-			// Calculate digest by file stream
-			using ( var fs = op.FileFrom.Open(FileMode.Open,FileAccess.Read,FileShare.Read) )
-			{
-				using ( var hasher = System.Security.Cryptography.HashAlgorithm.Create(algo) )
-				{
-					if ( hasher == null ) throw new ErrorInternal("Invalid hash algorithm.");
-					//binData = await hasher.ComputeHashAsync( fs, ctSource.Token );	// async ver is not available yet in .NET core 3.1
-					binData = await Task.Run<byte[]>( ()=> hasher.ComputeHash(fs) );
-				}
-			}
+			string algorithm = (op.Operation == Batch.Op.DigestMD5) ? "MD5" : "SHA1";
+			op.DigestSrc = await Ext.CaclDigestAsync(op.FileFrom, algorithm);
+			op.DigestDst = await Ext.CaclDigestAsync(op.FileTo,   algorithm);
 			ThrowIfCancellationRequested();
-
-			// Convert byte sequence to hexadecimal string
-			op.SetHex( binData );
 		}
 
 		//--------------------------------------------------------
@@ -1328,7 +1276,8 @@ namespace Tikubiken
 					(from e in elmIdentity.Elements()
 					 where e.Name == "patch" || e.Name == "patchref"
 					 select e.Attribute("version").Value).First();
-				elmIdentity.Add( new XAttribute("hash", (from b in listBatch where b.Id==id select b.Digest).First()) );
+				elmIdentity.Add( new XAttribute("source",      (from b in listBatch where b.Id==id select b.DigestSrc).First()) );
+				elmIdentity.Add( new XAttribute("destination", (from b in listBatch where b.Id==id select b.DigestDst).First()) );
 			}
 
 			// Save XML to file
@@ -1361,65 +1310,77 @@ namespace Tikubiken
 
 			ReportMessage( $"Writing: {fiOutput.Name} ..." );
 
-			// Copy temporary archive to output file
-#if	DEBUG
-			using ( var fsArchive = fiOutput.Open(FileMode.Create, FileAccess.Write, FileShare.None) )
-#else
-			using ( var fsArchive = fiOutput.Open(FileMode.CreateNew, FileAccess.Write, FileShare.None) )
-#endif
-			{
-				int paddingLength;
-				int len;
-				byte[] buf = new byte[c_blockSize];
+			// Create directories to output file
+			Directory.CreateDirectory(fiOutput.DirectoryName);
 
-				// Write exe section
-				if ( Path.GetExtension(fiOutput.Name).ToUpper() == @".EXE" )
+			try
+			{
+				// Copy temporary archive to output file
+#if	DEBUG
+				using ( var fsArchive = fiOutput.Open(FileMode.Create, FileAccess.Write, FileShare.None) )
+#else
+				using ( var fsArchive = fiOutput.Open(FileMode.CreateNew, FileAccess.Write, FileShare.None) )
+#endif
 				{
-					var asm = Assembly.GetExecutingAssembly();
-					using ( var fsRes = asm.GetManifestResourceStream(c_ridUpdateExe) )
+					int paddingLength;
+					int len;
+					byte[] buf = new byte[c_blockSize];
+
+					// Write exe section
+					if ( Path.GetExtension(fiOutput.Name).ToUpper() == @".EXE" )
 					{
-						while ( fsRes.Position < fsRes.Length )
+						var asm = Assembly.GetExecutingAssembly();
+						using ( var fsRes = asm.GetManifestResourceStream(c_ridUpdateExe) )
 						{
-							len = await fsRes.ReadAsync(buf, 0, c_blockSize, ctSource.Token);
-							await fsArchive.WriteAsync(buf, 0, len, ctSource.Token);
+							while ( fsRes.Position < fsRes.Length )
+							{
+								len = await fsRes.ReadAsync(buf, 0, c_blockSize, ctSource.Token);
+								await fsArchive.WriteAsync(buf, 0, len, ctSource.Token);
+							}
 						}
 					}
-				}
-				header.HeadOffset  = (int) fsArchive.Position;
-				header.HeadOffset += paddingLength = TBPHeader.PaddingLength(header.HeadOffset);
+					header.HeadOffset  = (int) fsArchive.Position;
+					header.HeadOffset += paddingLength = TBPHeader.PaddingLength(header.HeadOffset);
 
-				// Zero padding after exe block
-				Array.Fill<byte>(buf, 0, 0, TBPHeader.AlignmentTBP);
-				await fsArchive.WriteAsync(buf, 0, paddingLength, ctSource.Token);
-
-				// Write alignment padding after exe section
-				header.ZipOffset = header.HeadOffset + TBPHeader.Size - 4;
-				header.TailOffset = header.ZipOffset + header.ZipLength;
-				header.TailOffset += paddingLength = TBPHeader.PaddingLength(header.TailOffset);
-
-				// Write header to file
-				fsArchive.WriteTBPHeader( header );
-
-				// Write temporary archive to output asyncronously
-				using ( var fsZip = fiZip.Open(FileMode.Open, FileAccess.Read, FileShare.None) )
-				{
-					// The first 4 bytes overlap the Zip header.
-					fsZip.Seek(TBPHeader.OverlapLength, SeekOrigin.Begin);
-
-					// Copy across streams
-					while ( fsZip.Position < fsZip.Length )
-					{
-						len = await fsZip.ReadAsync(buf, 0, c_blockSize, ctSource.Token);
-						await fsArchive.WriteAsync(buf, 0, len, ctSource.Token);
-					}
-
-					// Zero padding after zip block
+					// Zero padding after exe block
 					Array.Fill<byte>(buf, 0, 0, TBPHeader.AlignmentTBP);
 					await fsArchive.WriteAsync(buf, 0, paddingLength, ctSource.Token);
 
-					// Write tail information block
+					// Write alignment padding after exe section
+					header.ZipOffset = header.HeadOffset + TBPHeader.Size - 4;
+					header.TailOffset = header.ZipOffset + header.ZipLength;
+					header.TailOffset += paddingLength = TBPHeader.PaddingLength(header.TailOffset);
+
+					// Write header to file
 					fsArchive.WriteTBPHeader( header );
+
+					// Write temporary archive to output asyncronously
+					using ( var fsZip = fiZip.Open(FileMode.Open, FileAccess.Read, FileShare.None) )
+					{
+						// The first 4 bytes overlap the Zip header.
+						fsZip.Seek(TBPHeader.OverlapLength, SeekOrigin.Begin);
+
+						// Copy across streams
+						while ( fsZip.Position < fsZip.Length )
+						{
+							len = await fsZip.ReadAsync(buf, 0, c_blockSize, ctSource.Token);
+							await fsArchive.WriteAsync(buf, 0, len, ctSource.Token);
+						}
+
+						// Zero padding after zip block
+						Array.Fill<byte>(buf, 0, 0, TBPHeader.AlignmentTBP);
+						await fsArchive.WriteAsync(buf, 0, paddingLength, ctSource.Token);
+
+						// Write tail information block
+						fsArchive.WriteTBPHeader( header );
+					}
 				}
+			}
+			catch
+			{
+				// Delete output file when failed
+				fiOutput.Delete();
+				throw;
 			}
 		}
 
@@ -1431,8 +1392,20 @@ namespace Tikubiken
 	//** public sealed class Processor **********************************************************
 
 	//============================================================
-	// Coder implementations
+	// Interface: ICoder
 	//============================================================
+
+	public interface ICoder
+	{
+		public DeltaFormat Format { get; set; }
+
+		public Task DoAsync( byte[] binSource, 			// old file for both enc and dec
+							 byte[] binTarget, 			// new file for enc/delta file for dec
+							 FileInfo fiOutput, 		// delta file for enc/rebuilt file for dec
+							 CancellationToken cToken,	// Cancellation token
+							 Progress<float> progress	// where progress will be reported to as a value of 0.0f - 1.0f
+							);
+	}
 
 	// BsDiff
 	//------------------------------
@@ -1514,27 +1487,3 @@ namespace Tikubiken
 		}
 	}
 }
-
-
-
-/*
-
-XML解析
-通読
-処理手順の再帰的コンテナクラス作成Batchとかでいい、zipでひとつにまとめる対象のワークディレクトリをひとつ作り、その中にファイルを配置する操作すべてを記録、coverとpatch.target/branchが対象、他のタグはデータだけなのでXMLドキュメントを最後に改変する
-updater.cover容量計算
-patch versionの唯一性確認
-patchref versionの参照可能性確認
-patch versionごとにフォルダ作成用データ作成→容量計算
-install.identityごとに容量計算
-
-Batchのコマンド
-ディレクトリ作成してワークノードを移動
-ファイルをコピー
-ファイルの差分を作成
-
-DirectoryInfo,FileInfoのメンバとbsdiffだけで作業が完了するように分解する
-指定の動作を実行するExec()メソッドを持つ
-
-プログレスバーはBatchオブジェクト全体の容量のみ、前処理、後処理は反映しないので、バーなしで作業→Batchでバーがのびる→100%状態で後処理(xml出力)
-*/

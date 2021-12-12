@@ -10,7 +10,7 @@ using System.Threading;
 
 namespace BsPlus
 {
-	public partial class Utils
+	public partial class BsPlus
 	{
 		public static async System.Threading.Tasks.Task ApplyAsync(Stream input, Func<Stream> openPatchStream, Stream output,
 		CancellationToken cToken, IProgress<float> Progress=null)
@@ -29,7 +29,7 @@ namespace BsPlus
 		/// <param name="Progress">Progress reporting action. Or null if not needed to report progress.</param>
 		//public static void Apply(Stream input, Func<Stream> openPatchStream, Stream output)
 		public static void Apply(Stream input, Func<Stream> openPatchStream, Stream output,
-		CancellationToken? cToken=null, IProgress<float> Progress=null)
+		CancellationToken cToken=default, IProgress<float> Progress=null)
 		{
 			// check arguments
 			if (input == null)
@@ -105,7 +105,8 @@ namespace BsPlus
 					while (newPosition < newSize)
 					{
 						// Report progress and accept cancel request in every loop lap.
-						Advance(cToken, Progress, (float)newPosition / (float)newSize );
+						Tikubiken.Ext.Advance(Progress, (float)newPosition / (float)newSize );
+						Tikubiken.Ext.AcceptCancel(cToken);
 
 						// read control data
 						for (int i = 0; i < 3; i++)
@@ -125,7 +126,8 @@ namespace BsPlus
 						while (bytesToCopy > 0)
 						{
 							// Report progress and accept cancel request in every loop lap.
-							Advance(cToken, Progress, (float)newPosition / (float)newSize );
+							Tikubiken.Ext.Advance(Progress, (float)newPosition / (float)newSize );
+							Tikubiken.Ext.AcceptCancel(cToken);
 
 							int actualBytesToCopy = Math.Min(bytesToCopy, c_bufferSize);
 
@@ -156,7 +158,8 @@ namespace BsPlus
 						while (bytesToCopy > 0)
 						{
 							// Report progress and accept cancel request in every loop lap.
-							Advance(cToken, Progress, (float)newPosition / (float)newSize );
+							Tikubiken.Ext.Advance(Progress, (float)newPosition / (float)newSize );
+							Tikubiken.Ext.AcceptCancel(cToken);
 
 							int actualBytesToCopy = Math.Min(bytesToCopy, c_bufferSize);
 
@@ -172,7 +175,8 @@ namespace BsPlus
 					}
 
 					// Report progress and accept cancel request in every loop lap.
-					Advance(cToken, Progress, 1.0f );
+					Tikubiken.Ext.Advance(Progress, 1.0f );
+					Tikubiken.Ext.AcceptCancel(cToken);
 				}
 			}
 		}

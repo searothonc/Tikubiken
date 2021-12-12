@@ -68,7 +68,7 @@ namespace BsPlus
 		// Constants
 		//--------------------------------------------------------
 		//const long c_fileSignature = 0x3034464649445342L;		// "BSDIFF40"
-		const long c_fileSignature = 0x30312B5342424B54L;		// "TKBBS+10"
+		public const long c_fileSignature = 0x30312B5342424B54L;		// "TKBBS+10"
 		const int c_headerSize = 32;
 
 		// Expose protected const values as static readonly
