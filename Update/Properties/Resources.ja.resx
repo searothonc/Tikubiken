@@ -117,25 +117,52 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="btntext_Cancel" xml:space="preserve">
-    <value>&amp;Cancel</value>
+  <data name="button_cancel" xml:space="preserve">
+    <value>キャンセル(&amp;C)</value>
   </data>
-  <data name="btntext_Start" xml:space="preserve">
-    <value>&amp;Start</value>
+  <data name="button_exit" xml:space="preserve">
+    <value>終了(&amp;E)</value>
   </data>
-  <data name="log_copyfile" xml:space="preserve">
-    <value>Copying file: </value>
+  <data name="button_processing" xml:space="preserve">
+    <value>処理中...</value>
   </data>
-  <data name="log_diff" xml:space="preserve">
-    <value>Comparing files: </value>
+  <data name="button_start" xml:space="preserve">
+    <value>開始(&amp;S)</value>
   </data>
-  <data name="log_digest" xml:space="preserve">
-    <value>Calculating hash value for: </value>
+  <data name="error_abort" xml:space="preserve">
+    <value>エラーが発生したため更新は行われませんでした。</value>
   </data>
-  <data name="ofd_out_filter" xml:space="preserve">
-    <value>Executable files (*.exe)|*.exe|All files (*.*)|*.*</value>
+  <data name="error_corruptarchive" xml:space="preserve">
+    <value>パッチデータが不正です。</value>
   </data>
-  <data name="ofd_src_filter" xml:space="preserve">
-    <value>XML files (*.xml)|*.xml|All files (*.*)|*.*</value>
+  <data name="error_extract" xml:space="preserve">
+    <value>パッチデータが見つかりません。</value>
+  </data>
+  <data name="error_misplace" xml:space="preserve">
+    <value>インストール先のディレクトリが見つかりません。</value>
+  </data>
+  <data name="error_msgbox" xml:space="preserve">
+    <value>Error</value>
+  </data>
+  <data name="error_newest" xml:space="preserve">
+    <value>すでに最新版です。</value>
+  </data>
+  <data name="error_shortdiskspace" xml:space="preserve">
+    <value>ディスクの空き容量が不足しています。</value>
+  </data>
+  <data name="msg_cancel" xml:space="preserve">
+    <value>アップデートを中止しました。アプリケーションを終了してください。</value>
+  </data>
+  <data name="msg_complete" xml:space="preserve">
+    <value>完了</value>
+  </data>
+  <data name="msg_process" xml:space="preserve">
+    <value>アップデート中...</value>
+  </data>
+  <data name="msg_ready" xml:space="preserve">
+    <value>アップデートを開始するには[開始]ボタンをクリックして下さい。</value>
+  </data>
+  <data name="String" xml:space="preserve">
+    <value>処理中...</value>
   </data>
 </root>

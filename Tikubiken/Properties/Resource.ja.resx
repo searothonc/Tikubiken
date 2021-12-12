@@ -118,24 +118,24 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="btntext_Cancel" xml:space="preserve">
-    <value>&amp;Cancel</value>
+    <value>キャンセル(&amp;C)</value>
   </data>
   <data name="btntext_Start" xml:space="preserve">
-    <value>&amp;Start</value>
+    <value>開始(&amp;S)</value>
   </data>
   <data name="log_copyfile" xml:space="preserve">
-    <value>Copying file: </value>
+    <value>ファイルコピー中:</value>
   </data>
   <data name="log_diff" xml:space="preserve">
-    <value>Comparing files: </value>
+    <value>ファイル比較中:</value>
   </data>
   <data name="log_digest" xml:space="preserve">
-    <value>Calculating hash value for: </value>
+    <value>ハッシュ値を計算中:</value>
   </data>
   <data name="ofd_out_filter" xml:space="preserve">
-    <value>Executable files (*.exe)|*.exe|All files (*.*)|*.*</value>
+    <value>実行可能ファイル (*.exe)|*.exe|すべてのファイル (*.*)|*.*</value>
   </data>
   <data name="ofd_src_filter" xml:space="preserve">
-    <value>XML files (*.xml)|*.xml|All files (*.*)|*.*</value>
+    <value>XMLファイル (*.xml)|*.xml|すべてのファイル (*.*)|*.*</value>
   </data>
 </root>

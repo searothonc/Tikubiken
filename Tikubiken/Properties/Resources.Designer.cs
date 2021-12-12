@@ -106,7 +106,7 @@ namespace Tikubiken.Properties {
         }
         
         /// <summary>
-        ///   Executable files (*.exe)|*.exe|TBP files (*.tbp)|*.tbp|All files (*.*)|*.* に類似しているローカライズされた文字列を検索します。
+        ///   Executable files (*.exe)|*.exe|All files (*.*)|*.* に類似しているローカライズされた文字列を検索します。
         /// </summary>
         internal static string ofd_out_filter {
             get {
