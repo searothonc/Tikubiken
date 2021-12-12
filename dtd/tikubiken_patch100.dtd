@@ -72,9 +72,10 @@
 <!--  <identity>                                                -->
 <!--////////////////////////////////////////////////////////////-->
 <!ELEMENT identity  ((patch|patchref), message) >
-<!ATTLIST identity path   CDATA #REQUIRED>
-<!ATTLIST identity method (MD5|SHA1) "SHA1">
-<!ATTLIST identity hash   CDATA #REQUIRED>
+<!ATTLIST identity path         CDATA #REQUIRED>
+<!ATTLIST identity method       (MD5|SHA1) "SHA1">
+<!ATTLIST identity source       CDATA #REQUIRED>
+<!ATTLIST identity destination  CDATA #REQUIRED>
 
 <!--==============================-->
 <!--  <patchref>                  -->
