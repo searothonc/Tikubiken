@@ -3,6 +3,7 @@
  * Upnacked class to handle unpacked patch data
  * Copyright (c) 2021 Searothonc
 \* ********************************************************************** */
+using System;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
@@ -12,7 +13,7 @@ using Tikubiken.Properties;
 
 namespace Tikubiken
 {
-    class Unpacked
+    class Unpacked : IDisposable
 	{
 		//------------------------------------------------------------
 		// Constants & Fields
@@ -32,6 +33,8 @@ namespace Tikubiken
 		private DirectoryInfo	dirExe;
 		private DirectoryInfo	dirTmp;
 
+		private System.Drawing.Image coverImage;
+
 		//--------------------------------------------------------
 		// Properties
 		//--------------------------------------------------------
@@ -40,7 +43,7 @@ namespace Tikubiken
 		public FileInfo PatchXML => fiPatchXML;
 
 		// Commandline Options
-		public string OptNoUnpack		{ get; protected set; }
+		public string OptNoUnpack				{ get; protected set; }
 
 		//--------------------------------------------------------
 		// Constants: unique instance only
@@ -61,10 +64,17 @@ namespace Tikubiken
 		// Clean up
 		//--------------------------------------------------------
 
-		// Disposed only when applcation is closed
-		~Unpacked()
+		public void Dispose()
 		{
+			DisposeCoverImage();
 			DeleteTemporaryDirectory();
+		}
+
+		private void DisposeCoverImage()
+		{
+			if ( coverImage == null ) return;
+			coverImage.Dispose();
+			coverImage = null;
 		}
 
 		//--------------------------------------------------------
@@ -76,6 +86,7 @@ namespace Tikubiken
 		{
 			// Initial value for properties
 			this.OptNoUnpack = null;
+			this.coverImage = null;
 
 			// Get the path to starting assembly
 			fiExe = new FileInfo( System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName );
@@ -107,7 +118,6 @@ namespace Tikubiken
 
 			// Path to patch.xml
 			fiPatchXML = new FileInfo( Ext.JoinPath(dirTmp.FullName, Ext.PatchXML) );
-Debug.WriteLine( fiPatchXML.FullName );
 			if ( !fiPatchXML.Exists ) throw new URTException(Resources.error_corruptarchive);
 		}
 
@@ -167,7 +177,7 @@ Debug.WriteLine( fiPatchXML.FullName );
 				if ( ExtractStream(stream) ) return;	// Data successfully extracted
 
 			// Search for *.tbp files in same directory as executable file
-			foreach ( FileInfo file in dirExe.EnumerateFiles($"*.{Ext.PatchExt}") )
+			foreach ( FileInfo file in dirExe.EnumerateFiles($"*{Ext.PatchExt}") )
 			{
 				if ( file.Length < TBPHeader.Size*2 ) continue;	// the file is too small
 				using ( var stream = file.Open(FileMode.Open, FileAccess.Read) )
@@ -241,6 +251,18 @@ Debug.WriteLine( fiPatchXML.FullName );
 		// From unzipped root
 		public string FromUnpackRoot(string relative)
 			=> Ext.JoinPath(dirTmp.FullName, relative);
+
+		//--------------------------------------------------------
+		// Load cover image
+		//--------------------------------------------------------
+
+		public System.Drawing.Image LoadCoverImage( string filename )
+		{
+			DisposeCoverImage();
+			return coverImage = System.Drawing.Image.FromFile( FromUnpackRoot(filename) );
+		}
+
+
 
 		//------------------------------------------------------------
 		// Error Report

@@ -26,29 +26,36 @@ namespace Tikubiken
 			// Conditionally, set debug log being outputted into the file
 			Ext.SetDebugLogToFile();
 
-			// Extract data from executable file
-			Unpacked unpacked;
 			try
 			{
-				unpacked = Unpacked.GetInstance();
-			}
-			catch ( URTException urte )
-			{
-				urte.MsgBox(Resources.error_msgbox);
-				return;
-			}
+				// Extract data from executable file
+				Unpacked unpacked;
+				try
+				{
+					unpacked = Unpacked.GetInstance();
+				}
+				catch ( URTException urte )
+				{
+					urte.MsgBox(Resources.error_msgbox);
+					return;
+				}
 
-			// Run IDE generated Windows form operation
-			try
-			{
-				RunForm();
-			}
-			catch ( Exception e )
-			{
-				unpacked.ErrorReport(e.ToString(), "Outmost:catch all");
+				// Run IDE generated Windows form operation
+				try
+				{
+					RunForm();
+				}
+				catch ( Exception e )
+				{
+					unpacked.ErrorReport(e.ToString(), "Outmost:catch all");
 #if	DEBUG
-				throw;
+					throw;
 #endif
+				}
+			}
+			finally
+			{
+				Unpacked.GetInstance()?.Dispose();
 			}
 		}
 

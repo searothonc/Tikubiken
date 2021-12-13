@@ -4,7 +4,7 @@
     <OutputType>WinExe</OutputType>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <UseWindowsForms>true</UseWindowsForms>
-    <ApplicationIcon></ApplicationIcon>
+    <ApplicationIcon>Resources\update.ico</ApplicationIcon>
     <Copyright>Copyright 2021 © Searothonc</Copyright>
     <Authors>Searothonc</Authors>
     <Company>Searothonc</Company>
@@ -17,6 +17,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <DebugType>none</DebugType>
     <DebugSymbols>false</DebugSymbols>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -26,7 +27,6 @@
   <ItemGroup>
     <None Remove="Resources\cover-update.jpg" />
     <None Remove="Resources\cover.jpg" />
-    <None Remove="Resources\update.ico" />
   </ItemGroup>
 
   <ItemGroup>

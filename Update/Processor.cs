@@ -265,8 +265,7 @@ namespace Tikubiken
 		{
 			var elm = LanguageMatchElement(EnumerateChildren("updater", "cover"));
 			if (elm == null) return null;
-			return System.Drawing.Image.FromFile(
-				Unpacked.GetInstance().FromUnpackRoot(elm.Attribute("image").Value) );
+			return Unpacked.GetInstance().LoadCoverImage(elm.Attribute("image").Value);
 		}
 
 		// Localised title bar text, or null
