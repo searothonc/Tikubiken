@@ -122,5 +122,24 @@ namespace Tikubiken.Properties {
                 return ResourceManager.GetString("ofd_src_filter", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   The output file has an extension other than the default &quot;.exe&quot;. Do you want to add a default extension?
+        ///(If the file extension is not &quot;.exe&quot;, the executable patch will not be generated.) に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        internal static string query_extension {
+            get {
+                return ResourceManager.GetString("query_extension", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   The output file already exists. Overwrite? に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        internal static string query_overwrite {
+            get {
+                return ResourceManager.GetString("query_overwrite", resourceCulture);
+            }
+        }
     }
 }

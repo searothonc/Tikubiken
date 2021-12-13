@@ -491,14 +491,7 @@ namespace Tikubiken
 		{
 			// Assembly currently running
 			var asm = Assembly.GetExecutingAssembly();
-/*
-#if DEBUG
-			// アセンブリに埋め込まれているすべてのリソースの論理名を取得して表示する
-			foreach (var _rname in asm.GetManifestResourceNames()) {
-				Debug.WriteLine(_rname);
-			}
-#endif
-*/
+
 			// Settings for XML Reader
 			var settings = new XmlReaderSettings();
 			settings.DtdProcessing					= DtdProcessing .Parse;
@@ -1298,8 +1291,8 @@ namespace Tikubiken
 			string zipPath = JoinPath( dirTmp.FullName, fiOutput.Name + @".zip" );
 
 			// Create ZIP archive without the base directory name
-			ZipFile.CreateFromDirectory( dirWork.FullName, zipPath, 
-					CompressionLevel.Optimal, false );
+			await Task.Run( () => ZipFile.CreateFromDirectory( dirWork.FullName, zipPath, 
+					CompressionLevel.Optimal, false ) );
 			FileInfo fiZip = new FileInfo( zipPath );
 
 			// Header for archive section
@@ -1315,11 +1308,7 @@ namespace Tikubiken
 			try
 			{
 				// Copy temporary archive to output file
-#if	DEBUG
 				using ( var fsArchive = fiOutput.Open(FileMode.Create, FileAccess.Write, FileShare.None) )
-#else
-				using ( var fsArchive = fiOutput.Open(FileMode.CreateNew, FileAccess.Write, FileShare.None) )
-#endif
 				{
 					int paddingLength;
 					int len;

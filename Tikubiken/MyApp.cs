@@ -47,6 +47,9 @@ namespace Tikubiken
 		public string	OptCmdReport	{ get; protected set; }
 		public bool		OptSaveXML		{ get; protected set; }
 
+		// UI last state
+		public bool CheckClearLog		{ get; set; }
+
 		//------------------------------------------------------------
 		// Constructors
 		//------------------------------------------------------------
@@ -111,6 +114,7 @@ namespace Tikubiken
 			// Retrieve values
 			this.LastDir = ini.Get( "Status", "LastDir", this.ExeDir );
 			this.LastOut = ini.Get( "Status", "LastOut", this.ExeDir );
+			this.CheckClearLog = ini.Get( "Status", "ClearLog", true );
 
 			// Returns document if succeed
 			return ini;
@@ -119,8 +123,9 @@ namespace Tikubiken
 		// Save to INI file
 		public void IniSave()
 		{
-			iniDoc.Set( "Status", "LastDir", this.LastDir );
-			iniDoc.Set( "Status", "LastOut", this.LastOut );
+			iniDoc.Set( "Status", "LastDir",  this.LastDir );
+			iniDoc.Set( "Status", "LastOut",  this.LastOut );
+			iniDoc.Set( "Status", "ClearLog", this.CheckClearLog );
 
 			try
 			{

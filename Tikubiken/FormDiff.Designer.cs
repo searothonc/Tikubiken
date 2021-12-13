@@ -42,6 +42,7 @@ namespace Tikubiken
             this.textBoxLog = new System.Windows.Forms.TextBox();
             this.labelDeltaEncoding = new System.Windows.Forms.Label();
             this.comboBoxDeltaEncoding = new System.Windows.Forms.ComboBox();
+            this.checkBoxClearLog = new System.Windows.Forms.CheckBox();
             this.SuspendLayout();
             // 
             // labelSource
@@ -116,10 +117,19 @@ namespace Tikubiken
             this.comboBoxDeltaEncoding.FormattingEnabled = true;
             this.comboBoxDeltaEncoding.Name = "comboBoxDeltaEncoding";
             // 
+            // checkBoxClearLog
+            // 
+            resources.ApplyResources(this.checkBoxClearLog, "checkBoxClearLog");
+            this.checkBoxClearLog.Checked = true;
+            this.checkBoxClearLog.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.checkBoxClearLog.Name = "checkBoxClearLog";
+            this.checkBoxClearLog.UseVisualStyleBackColor = true;
+            // 
             // FormDiff
             // 
             resources.ApplyResources(this, "$this");
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.Controls.Add(this.checkBoxClearLog);
             this.Controls.Add(this.comboBoxDeltaEncoding);
             this.Controls.Add(this.labelDeltaEncoding);
             this.Controls.Add(this.textBoxLog);
@@ -155,6 +165,7 @@ namespace Tikubiken
         private System.Windows.Forms.TextBox textBoxLog;
         private System.Windows.Forms.Label labelDeltaEncoding;
         private System.Windows.Forms.ComboBox comboBoxDeltaEncoding;
+        private System.Windows.Forms.CheckBox checkBoxClearLog;
     }
 }
 

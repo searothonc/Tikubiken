@@ -124,18 +124,25 @@
     <value>開始(&amp;S)</value>
   </data>
   <data name="log_copyfile" xml:space="preserve">
-    <value>ファイルコピー中:</value>
+    <value>ファイルをコピー中:</value>
   </data>
   <data name="log_diff" xml:space="preserve">
-    <value>ファイル比較中:</value>
+    <value>ファイルを比較中:</value>
   </data>
   <data name="log_digest" xml:space="preserve">
     <value>ハッシュ値を計算中:</value>
   </data>
   <data name="ofd_out_filter" xml:space="preserve">
-    <value>実行可能ファイル (*.exe)|*.exe|すべてのファイル (*.*)|*.*</value>
+    <value>実行ファイル (*.exe)|*.exe|すべてのファイル (*.*)|*.*</value>
   </data>
   <data name="ofd_src_filter" xml:space="preserve">
     <value>XMLファイル (*.xml)|*.xml|すべてのファイル (*.*)|*.*</value>
+  </data>
+  <data name="query_extension" xml:space="preserve">
+    <value>出力ファイルの拡張子が既定の".exe"ではありません。拡張子を追加しますか？
+(拡張子が".exe"以外の場合、実行可能パッチは生成されません)</value>
+  </data>
+  <data name="query_overwrite" xml:space="preserve">
+    <value>出力ファイルは既に存在します。上書きしますか?</value>
   </data>
 </root>

@@ -91,6 +91,15 @@
   <data name="labelDeltaEncoding.Text" xml:space="preserve">
     <value>差分符号化方式(&amp;E)</value>
   </data>
+  <data name="checkBoxClearLog.Location" type="System.Drawing.Point, System.Drawing">
+    <value>346, 116</value>
+  </data>
+  <data name="checkBoxClearLog.Size" type="System.Drawing.Size, System.Drawing">
+    <value>138, 19</value>
+  </data>
+  <data name="checkBoxClearLog.Text" xml:space="preserve">
+    <value>開始前にログをクリア(&amp;L)</value>
+  </data>
   <data name="$this.Icon" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
         AAABAAMAQEAAAAEAIAAoQgAANgAAACAgAAABACAAqBAAAF5CAAAQEAAAAQAgAGgEAAAGUwAAKAAAAEAA

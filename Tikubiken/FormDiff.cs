@@ -51,6 +51,7 @@ namespace Tikubiken
 			// Initialyze UIs
 			InitDropdown();
 			ClearLogText();
+			checkBoxClearLog.Checked = myApp.CheckClearLog;
 		}
 
 		// Window is about to close
@@ -75,6 +76,7 @@ namespace Tikubiken
 		private void FormDiff_FormClosed(object sender, FormClosedEventArgs e)
 		{
 			// Save changes to ini file
+			myApp.CheckClearLog = checkBoxClearLog.Checked;
 			myApp.IniSave();
 		}
 
@@ -195,9 +197,59 @@ namespace Tikubiken
 		// Delegate to call AddLogText(string)
 		private delegate void VoidString(string s);
 
+
+		//------------------------------------------------------------
+		// Query Message Boxes
+		//------------------------------------------------------------
+
+		/// <summary>Supply default extension if need</summary>
+		/// <returns>(bool)Wheter the process can be started or not</returns>
+		private bool SupplyExtension()
+		{
+			string ext = Path.GetExtension( textBoxOutput.Text );
+			if ( ext.ToUpper() == @".EXE" ) return true;
+
+			// Query message box
+			DialogResult r = MessageBox.Show( 
+										Resources.query_extension, 
+										this.Text, 
+										MessageBoxButtons.YesNoCancel,
+										MessageBoxIcon.Question );
+			if ( r == DialogResult.Cancel ) return false;
+			if ( r == DialogResult.No ) return true;
+
+			// Add default extension
+			ext = textBoxOutput.Text[textBoxOutput.Text.Length-1] == '.'  ? "" : ".";
+			ext += "exe";
+			textBoxOutput.Text += ext;
+
+			return true;
+		}
+
+		/// <summary>Confirm overwrite when the output file exists</summary>
+		/// <returns>(bool)Wheter the process can be started or not</returns>
+		private bool IsOverwrite()
+		{
+			if ( !File.Exists(textBoxOutput.Text) ) return true;
+
+			// Query message box
+			DialogResult r = MessageBox.Show( 
+										Resources.query_overwrite, 
+										this.Text, 
+										MessageBoxButtons.OKCancel,
+										MessageBoxIcon.Question );
+			if ( r == DialogResult.OK ) return true;
+
+			return false;
+		}
+
 		//------------------------------------------------------------
 		// [Start] button
 		//------------------------------------------------------------
+
+		// Set the [Start] button availability
+		private void Init_buttonStart()
+			=> buttonStart.Enabled = CanStart();
 
 		// Check if the [Start] button is avaiable
 		private bool CanStart()
@@ -207,22 +259,22 @@ namespace Tikubiken
 			return System.IO.File.Exists(textBoxSource.Text);
 		}
 
-		// Set the [Start] button availability
-		private void Init_buttonStart()
-			=> buttonStart.Enabled = CanStart();
-
 		// [Start] button
 		private async void buttonStart_Click(object sender, EventArgs e)
 		{
 			if ( m_processor == null )
 			{
-				// Overwrite prompt
-				if ( File.Exists(textBoxOutput.Text) )
-				{
-				}
+				// Supply default extension
+				if ( !SupplyExtension() ) return;
+
+				// Confirm overwrite when the output file exists
+				if ( !IsOverwrite() ) return;
 
 				// Disable [Start] button first
 				DisableStartButton();
+
+				// Clear logs if checkbox is checked
+				if ( checkBoxClearLog.Checked ) textBoxLog.Text = "";
 
 				try
 				{
@@ -346,5 +398,5 @@ namespace Tikubiken
 			}
 
 		}
-	}
+    }
 }

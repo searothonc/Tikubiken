@@ -138,4 +138,11 @@
   <data name="ofd_src_filter" xml:space="preserve">
     <value>XML files (*.xml)|*.xml|All files (*.*)|*.*</value>
   </data>
+  <data name="query_extension" xml:space="preserve">
+    <value>The output file has an extension other than the default ".exe". Do you want to add a default extension?
+(If the file extension is not ".exe", the executable patch will not be generated.)</value>
+  </data>
+  <data name="query_overwrite" xml:space="preserve">
+    <value>The output file already exists. Overwrite?</value>
+  </data>
 </root>
