@@ -8,9 +8,9 @@ using System.Windows.Forms;
 
 namespace Tikubiken
 {
-    //============================================================
-    // Base class of user defined exception
-    //============================================================
+	//============================================================
+	// Base class of user defined exception
+	//============================================================
     class URTException : Exception
 	{
 		private static string _title;

@@ -1,9 +1,6 @@
 #define DEBUG_LOG_TO_FILE
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace Tikubiken

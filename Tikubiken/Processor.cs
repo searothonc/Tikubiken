@@ -4,23 +4,22 @@
  * Copyright (c) 2021 Searothonc
 \* ********************************************************************** */
 using System;
-using System.IO;
-using System.IO.Compression;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
+using System.IO.Compression;
+using System.Linq;
+using System.Reflection;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Linq;
-using System.Linq;
-using System.Reflection;
-using System.Text.RegularExpressions;
-
 using Tikubiken.Properties;
 
 namespace Tikubiken
 {
-	public sealed class Processor : IDisposable
+    public sealed class Processor : IDisposable
 	{
 		//--------------------------------------------------------
 		// Constants

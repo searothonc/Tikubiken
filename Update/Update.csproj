@@ -12,6 +12,7 @@
     <AssemblyName>Update</AssemblyName>
     <RootNamespace>Tikubiken</RootNamespace>
     <Nullable>annotations</Nullable>
+    <PackageId>Update</PackageId>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">

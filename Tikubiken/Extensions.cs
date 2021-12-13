@@ -6,19 +6,19 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Text;
-using System.Reflection;
 
 namespace Tikubiken
 {
-	//============================================================
-	// Enum
-	//============================================================
+    //============================================================
+    // Enum
+    //============================================================
 
-	public enum DeltaFormat
+    public enum DeltaFormat
 	{
 		None							= 0,
 

@@ -1,7 +1,7 @@
 ﻿/* ********************************************************************** *\
  * BsPlus: bsdiff/bspatch library with asynchronous support
  * Common in namespace
- * Copyright (c) 2021 Searothonc
+ * Modified by Searothonc
 \* ********************************************************************** */
 /*
 ** bsdiff.net **********************************************************

@@ -780,7 +780,8 @@ namespace Tikubiken
 		/// <param name="trim">(bool)Whether to trim extension or not</param>
 		public FileInfo FileAtRelativePath(DirectoryInfo dir, bool trim=false)
 			=> new FileInfo(MakeRelativePath(dir, trim));
-	}
+
+	}	//** Batch ***********************************************
 
 
 	//============================================================
@@ -795,7 +796,7 @@ namespace Tikubiken
 							 CancellationToken cToken,	// Cancellation token
 							 Progress<float> progress	// where progress will be reported to as a value of 0.0f - 1.0f
 						);
-	}
+	}	//** ICoder **********************************************
 
 
 	// BsDiff
@@ -819,7 +820,8 @@ namespace Tikubiken
 				await BsPlus.BsPlus.ApplyAsync(fsSource, ()=>fiDelta.OpenRead(), fsOutput, cToken, progress);
 			}
 		}
-	}
+	}	//** class BsPatchCoder : ICoder *************************
+
 
 	// VCDiff
 	//------------------------------
@@ -849,5 +851,6 @@ namespace Tikubiken
 					throw new CoderException(result.ToString());
 			}
 		}
-	}
-}
+	}	//** VCPatchCoder : ICoder ********************************
+
+}	//////// namespace Tikubiken //////////////////////////////////

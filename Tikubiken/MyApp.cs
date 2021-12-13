@@ -9,18 +9,15 @@
 	[Status]
 	LastDir	= last used directory
 */
-using System;
-using System.Collections.Generic;
-using System.Text;
 using Sgry.Ini;
+using System;
 using System.IO;
-using System.Windows.Forms;
+using System.Text;
 using System.Text.RegularExpressions;
-using System.Reflection;
 
 namespace Tikubiken
 {
-	class MyApp
+    class MyApp
 	{
 		//------------------------------------------------------------
 		// Constants

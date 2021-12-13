@@ -1,7 +1,7 @@
 ﻿/* ********************************************************************** *\
  * BsPlus: bsdiff/bspatch library with asynchronous support
  * Patch
- * Copyright (c) 2021 Searothonc
+ * Modified by Searothonc
 \* ********************************************************************** */
 using System;
 using System.IO;
