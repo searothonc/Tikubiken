@@ -981,7 +981,7 @@ namespace Tikubiken
 				ThrowIfCancellationRequested();
 
 				// Save to zip archive
-				ReportMessage( $"Compressing..." );
+				ReportMessage(Resources.log_compress);
 				await CreateArchive();
 
 				// Post message to reset progress bar
@@ -1300,7 +1300,7 @@ namespace Tikubiken
 			header.UnzipSize = SumDirectorySize( dirWork );
 			header.ZipLength = (int) fiZip.Length;
 
-			ReportMessage( $"Writing: {fiOutput.Name} ..." );
+			ReportMessage(Resources.log_writing + fiOutput.Name);
 
 			// Create directories to output file
 			Directory.CreateDirectory(fiOutput.DirectoryName);

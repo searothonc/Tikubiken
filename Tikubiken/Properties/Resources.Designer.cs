@@ -79,6 +79,15 @@ namespace Tikubiken.Properties {
         }
         
         /// <summary>
+        ///   Compressing... に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        internal static string log_compress {
+            get {
+                return ResourceManager.GetString("log_compress", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Copying file:  に類似しているローカライズされた文字列を検索します。
         /// </summary>
         internal static string log_copyfile {
@@ -102,6 +111,15 @@ namespace Tikubiken.Properties {
         internal static string log_digest {
             get {
                 return ResourceManager.GetString("log_digest", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Writing: に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        internal static string log_writing {
+            get {
+                return ResourceManager.GetString("log_writing", resourceCulture);
             }
         }
         

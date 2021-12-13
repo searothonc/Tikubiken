@@ -231,6 +231,7 @@ namespace Tikubiken
 		[Conditional("DEBUG_LOG_TO_FILE")]
 		public static void SetDebugLogToFile()
 		{
+#if	DEBUG
 			string log_file = System.Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory) + @"\debug.txt";
 			StreamWriter sw = new StreamWriter(log_file);
 			sw.AutoFlush = true;
@@ -239,6 +240,7 @@ namespace Tikubiken
 			Trace.Listeners.Add(twtl);
 			string nowtime = DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss");
 			Debug.WriteLine($"[Started: {nowtime}]");
+#endif
 		}
 	}	//-- static class Ext ------------------------------------
 

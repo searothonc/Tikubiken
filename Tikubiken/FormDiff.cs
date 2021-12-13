@@ -167,15 +167,20 @@ namespace Tikubiken
 		private DeltaFormat GetDropdownValue() 
 			=> dicEncoding[comboBoxDeltaEncoding.SelectedItem as string];
 
-		// Set enability for [Output]
+		// Set enability for [Delta Encoding Format]
 		private void SetEnable_UI_DeltaEncoding(bool isEnabled)
 			=> comboBoxDeltaEncoding.Enabled = isEnabled;
+
+		// Set enability for [Clear log before start]
+		private void SetEnable_UI_checkBoxClearLog(bool isEnabled)
+			=> checkBoxClearLog.Enabled = isEnabled;
 
 		// Set enability for UIs related to operation settings
 		private void SetEnable_UIs_EncodingSettings(bool isEnabled)
 		{
 			SetEnable_UIs_filepath(isEnabled);
 			SetEnable_UI_DeltaEncoding(isEnabled);
+			SetEnable_UI_checkBoxClearLog(isEnabled);
 		}
 
 		//------------------------------------------------------------

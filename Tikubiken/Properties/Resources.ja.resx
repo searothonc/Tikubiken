@@ -123,6 +123,9 @@
   <data name="btntext_Start" xml:space="preserve">
     <value>開始(&amp;S)</value>
   </data>
+  <data name="log_compress" xml:space="preserve">
+    <value>圧縮中...</value>
+  </data>
   <data name="log_copyfile" xml:space="preserve">
     <value>ファイルをコピー中:</value>
   </data>
@@ -131,6 +134,9 @@
   </data>
   <data name="log_digest" xml:space="preserve">
     <value>ハッシュ値を計算中:</value>
+  </data>
+  <data name="log_writing" xml:space="preserve">
+    <value>書き込み中:</value>
   </data>
   <data name="ofd_out_filter" xml:space="preserve">
     <value>実行ファイル (*.exe)|*.exe|すべてのファイル (*.*)|*.*</value>

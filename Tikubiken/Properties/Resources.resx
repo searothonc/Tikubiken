@@ -123,6 +123,9 @@
   <data name="btntext_Start" xml:space="preserve">
     <value>&amp;Start</value>
   </data>
+  <data name="log_compress" xml:space="preserve">
+    <value>Compressing...</value>
+  </data>
   <data name="log_copyfile" xml:space="preserve">
     <value>Copying file: </value>
   </data>
@@ -131,6 +134,9 @@
   </data>
   <data name="log_digest" xml:space="preserve">
     <value>Calculating hash value for: </value>
+  </data>
+  <data name="log_writing" xml:space="preserve">
+    <value>Writing:</value>
   </data>
   <data name="ofd_out_filter" xml:space="preserve">
     <value>Executable files (*.exe)|*.exe|All files (*.*)|*.*</value>
