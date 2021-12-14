@@ -56,7 +56,9 @@ namespace Tikubiken
 		public MyApp()
 		{
 			// Path name for .INI file
-			this.ExeDir = System.Environment.CurrentDirectory;
+			// Get the path to starting assembly
+			var fiExe = new FileInfo( System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName );
+			this.ExeDir = fiExe.DirectoryName;
 			this.IniPath = this.ExeDir + Path.DirectorySeparatorChar + INI_name;
 
 			// Default values of command line options
