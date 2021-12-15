@@ -17,7 +17,7 @@
 <!--////////////////////////////////////////////////////////////-->
 <!--  <updater>                                                 -->
 <!--////////////////////////////////////////////////////////////-->
-<!ELEMENT updater (cover|title|localise)* >
+<!ELEMENT updater (cover|title|localise|layout)* >
 
 <!--==============================-->
 <!--  <cover>                     -->
@@ -39,6 +39,39 @@
 <!ELEMENT localise (#PCDATA)>
 <!ATTLIST localise target (progress|start|cancel|exit|processing) #REQUIRED>
 <!ATTLIST localise lang   CDATA #REQUIRED><!-- IETF language tag RFC 5646 -->
+
+<!--==============================-->
+<!--  <layout>                    -->
+<!--==============================-->
+<!ELEMENT layout (anchor|location|size)* >
+<!ATTLIST layout target (pictureBox|labelMessage|buttonStart|labelProgress|progressBar) #REQUIRED>
+
+<!--==============================-->
+<!--  <anchor>                    -->
+<!--==============================-->
+<!ELEMENT anchor EMPTY>
+<!ATTLIST anchor styles ENTITIES #REQUIRED>
+<!NOTATION  AnchorStyles  SYSTEM  "AnchorStyles">
+<!ENTITY  None    SYSTEM  "None=0"    NDATA AnchorStyles>
+<!ENTITY  Top     SYSTEM  "Top=1"     NDATA AnchorStyles>
+<!ENTITY  Bottom  SYSTEM  "Bottom=2"  NDATA AnchorStyles>
+<!ENTITY  Left    SYSTEM  "Left=4"    NDATA AnchorStyles>
+<!ENTITY  Right   SYSTEM  "Right=8"   NDATA AnchorStyles>
+
+<!--==============================-->
+<!--  <location>                  -->
+<!--==============================-->
+<!ELEMENT location EMPTY>
+<!ATTLIST location x  CDATA #REQUIRED>
+<!ATTLIST location y  CDATA #REQUIRED>
+
+<!--==============================-->
+<!--  <size>                      -->
+<!--==============================-->
+<!ELEMENT size EMPTY>
+<!ATTLIST size width  CDATA #REQUIRED>
+<!ATTLIST size height CDATA #REQUIRED>
+
 
 
 
