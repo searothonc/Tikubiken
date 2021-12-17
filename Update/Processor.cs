@@ -256,6 +256,9 @@ namespace Tikubiken
 		private IEnumerable<XElement> EnumerateChildren(string parentElmName, string nameFilter = null)
 			=> xmlDoc.Descendants(parentElmName).First().Elements(nameFilter);
 
+		// Layout element collection
+		public IEnumerable<XElement> GetLayoutXML() => EnumerateChildren("updater","layout");
+
 		//--------------------------------------------------------
 		// <updater>
 		//--------------------------------------------------------

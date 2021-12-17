@@ -92,6 +92,9 @@ namespace Tikubiken
 				// *** DO NOT await the returned Task instance(=nowait) ***
 				Task nowait = m_processor.DetermineLocation();
 
+				// Layout controls
+				LayoutControls(m_processor.GetLayoutXML());
+
 				// Set image by XML definition
 				var image = m_processor.GetCoverImage();
 				if ( image != null ) this.pictureBox.Image = image;
@@ -115,6 +118,51 @@ namespace Tikubiken
 			catch
 			{
 				throw;
+			}
+		}
+
+		// Layout controls by XML
+		private void LayoutControls(IEnumerable<XElement> elmsLayout)
+		{
+			foreach(XElement elmLayout in elmsLayout)
+			{
+				var ctrl = this.Controls[elmLayout.Attribute("target")?.Value] ?? this;
+
+				// <anchor>
+				XElement elm = elmLayout.Element("anchor");
+				if ( elm != null )
+				{
+					AnchorStyles style = AnchorStyles.None;
+					foreach(string s in Enum.GetNames(typeof(AnchorStyles)) )
+						if ( elm.Attribute("styles").Value.Contains(s) ) 
+							style |= Enum.Parse<AnchorStyles>(s);
+					ctrl.Anchor = style;
+				}
+
+				// <autosize>
+				elm = elmLayout.Element("autosize");
+				if ( elm != null )
+				{
+					ctrl.AutoSize = elm.Attribute("value").Value == "true";
+				}
+
+				// <location>
+				elm = elmLayout.Element("location");
+				if ( elm != null )
+				{
+					System.Drawing.Point location = default;
+					location.X = int.Parse(elm.Attribute("x").Value);
+					location.Y = int.Parse(elm.Attribute("y").Value);
+					ctrl.Location = location;
+				}
+
+				// <size>
+				elm = elmLayout.Element("size");
+				if ( elm != null )
+				{
+					ctrl.Width  = int.Parse(elm.Attribute("width").Value);
+					ctrl.Height = int.Parse(elm.Attribute("height").Value);
+				}
 			}
 		}
 

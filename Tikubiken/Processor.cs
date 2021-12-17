@@ -172,6 +172,9 @@ namespace Tikubiken
 			public static string Msg_AbsolutePath	= "Absolute path can not be specified here.";
 
 			//public static string Msg_FileNotExists	= "File not exists.";
+
+			public static string Msg_UniqSibling	= "Cannot be duplicated in sibling elements";
+			public static string Msg_AttrNumber		= "Attribute must be a number";
 		}
 
 		/// <summary>DOCTYPE error</summary>
@@ -548,6 +551,7 @@ namespace Tikubiken
 			ErrorCheckXML_CheckDuplicateInstallPlacement();
 			ErrorCheckXML_CheckIdentityPathRelative();
 			//ErrorCheckXML_CheckPatchrefIDReference();	// already checked in DTD validaton
+			ErrorCheckXML_CheckLayoutAndDescendants();
 		}
 
 		// Ensure "lang" attributes are not duplicated.
@@ -666,6 +670,53 @@ namespace Tikubiken
 				str += $"<patchref version=\x22{attr.Value}\x22> in Line {info.LineNumber}, Position {info.LinePosition}";
 			}
 			throw new ErrorAnalysis( Error.Msg_NoReferenceID + str );
+		}
+
+		// Check <layout> and relevant elements are correct
+		private void ErrorCheckXML_CheckLayoutAndDescendants()
+		{
+			// Check all <layout> elements
+			XElement elm;
+			foreach ( var elmLayout in xmlDoc.Descendants("layout") )
+			{
+				// <anchor> element
+				elm =ErrorCheckXML_CheckChildUnique(elmLayout, "anchor");
+				if ( elm != null )
+				{
+					// checking styles attribute values
+					// is already done in DTD validation
+				}
+
+				// <autosize> element
+				elm =ErrorCheckXML_CheckChildUnique(elmLayout, "autosize");
+
+				// <location> element
+				elm =ErrorCheckXML_CheckChildUnique(elmLayout, "location");
+				if ( elm != null ) ErrorCheckXML_CheckChildAttributeNumber(elm);
+
+				// <location> element
+				elm =ErrorCheckXML_CheckChildUnique(elmLayout, "size");
+				if ( elm != null ) ErrorCheckXML_CheckChildAttributeNumber(elm);
+			}
+		}
+
+		// Child element count have to be less than two
+		private XElement ErrorCheckXML_CheckChildUnique(XElement elmParent, string elmName)
+		{
+			var elms = elmParent.Elements(elmName);
+			if ( elms.Count() > 1 ) throw new ErrorAnalysis( $"{Error.Msg_UniqSibling}:<{elmName}>" );
+			return elms.FirstOrDefault();
+		}
+
+		// Child element's attributes are must be number
+		private void ErrorCheckXML_CheckChildAttributeNumber(XElement elm)
+		{
+			int v;
+			foreach ( XAttribute attr in elm.Attributes() )
+			{
+				if ( int.TryParse(attr.Value, out v) ) continue;
+				throw new ErrorAnalysis( $"{Error.Msg_AttrNumber}:{attr.Name}" );
+			}
 		}
 
 		//--------------------------------------------------------
