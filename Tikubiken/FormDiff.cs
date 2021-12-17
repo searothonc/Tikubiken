@@ -103,6 +103,10 @@ namespace Tikubiken
 			}
 		}
 
+		// Get [Source XML] file path
+		private string GetSourcePath()
+			=> MakeFullPath(textBoxSource.Text, myApp.LastDir);
+
 		// [Source XML] text box
 		private void textBoxSource_TextChanged(object sender, EventArgs e)
 			=> Init_buttonStart();
@@ -138,6 +142,19 @@ namespace Tikubiken
 		// [Output] text box
 		private void textBoxOutput_TextChanged(object sender, EventArgs e)
 			=> Init_buttonStart();
+
+		// Get [Output] file path
+		private string GetOutputPath()
+			=> MakeFullPath(textBoxOutput.Text, myApp.LastOut);
+
+		// Ensure path as full path
+		private string MakeFullPath(string userInput, string basePath)
+		{
+			// does the userInput hold full path?
+			if ( userInput.Contains(Path.DirectorySeparatorChar) ) return userInput;
+
+			return Ext.JoinPath(basePath, userInput);
+		}
 
 		// Set enability for [Output]
 		private void SetEnable_UIs_output(bool isEnabled)
@@ -286,8 +303,8 @@ namespace Tikubiken
 					using ( m_processor = new Processor(OperateProgress) )
 					{
 						( progressBar.Maximum, progressBar.Value ) = m_processor.Ready(
-								textBoxSource.Text,
-								textBoxOutput.Text,
+								GetSourcePath(),
+								GetOutputPath(),
 								GetDropdownValue()
 							);
 						// for "/ReportCmd=" commad line option

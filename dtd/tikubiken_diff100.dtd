@@ -43,8 +43,14 @@
 <!--==============================-->
 <!--  <layout>                    -->
 <!--==============================-->
-<!ELEMENT layout (anchor|location|size)* >
-<!ATTLIST layout target (pictureBox|labelMessage|buttonStart|labelProgress|progressBar) #REQUIRED>
+<!ELEMENT layout (anchor|autosize|location|size)* >
+<!ATTLIST layout target (form|pictureBox|labelMessage|buttonStart|labelProgress|progressBar) "form">
+
+<!--==============================-->
+<!--  <autosize>                  -->
+<!--==============================-->
+<!ELEMENT autosize EMPTY>
+<!ATTLIST autosize value  (true|false) #REQUIRED>
 
 <!--==============================-->
 <!--  <anchor>                    -->
@@ -71,8 +77,6 @@
 <!ELEMENT size EMPTY>
 <!ATTLIST size width  CDATA #REQUIRED>
 <!ATTLIST size height CDATA #REQUIRED>
-
-
 
 
 <!--////////////////////////////////////////////////////////////-->
