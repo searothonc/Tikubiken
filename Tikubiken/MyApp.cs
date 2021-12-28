@@ -43,12 +43,21 @@ namespace Tikubiken
 		public string LastDir		{ get; set; }
 		public string LastOut		{ get; set; }
 
+		// UI last state
+		public bool CheckClearLog		{ get; set; }
+
 		// Command line options
 		public string	OptCmdReport	{ get; protected set; }
 		public bool		OptSaveXML		{ get; protected set; }
 
-		// UI last state
-		public bool CheckClearLog		{ get; set; }
+		public DeltaFormat	DeltaFmt	{ get; set; }
+
+		public string SourceXMLName		{ get; private set; }
+		public string OutputName		{ get; private set; }
+
+		// Result of command line parsing
+		public bool IsCUIMode			{ get => this.DeltaFmt != DeltaFormat.None; }
+		public bool IsQuiet				{ get; private set; }
 
 		//------------------------------------------------------------
 		// Constructors
@@ -64,6 +73,12 @@ namespace Tikubiken
 			// Default values of command line options
 			this.OptCmdReport	= null;
 			this.OptSaveXML		= false;
+			this.DeltaFmt		= DeltaFormat.None;
+			this.SourceXMLName	= null;
+			this.OutputName		= null;
+
+			this.IsQuiet		= false;
+
 			// Parse command line parameters
 			ParseCommandLine();
 
@@ -79,19 +94,114 @@ namespace Tikubiken
 		//------------------------------------------------------------
 		private void ParseCommandLine()
 		{
-			string[] args = Environment.GetCommandLineArgs();
+			string[] args = System.Environment.GetCommandLineArgs();
 			for ( int i=1 ; i<args.Length ; ++i )
 			{
-				// [/ReportCmd=filename] RepoprtCmd option that report commands list in text file
-				if ( Regex.Match(args[i], @"(?i)^\/ReportCmd=").Success )
+				switch ( args[i] )
 				{
-					string path = args[i].Substring(11);
-					if ( path[1]!=':' ) path = Path.GetFullPath( Path.Join(this.ExeDir,path) );
-					this.OptCmdReport = path;
-				}
-				// [/SaveXML] Duplicate patch.xml out of result .exe or .tbp file.
-				if ( Regex.Match(args[i], @"(?i)^\/SaveXML$").Success) this.OptSaveXML = true;
+#if	DEBUG
+					// [/ReportCmd=filename] RepoprtCmd option that report commands list in text file
+					case string s when Regex.Match(s, @"(?i)^\/ReportCmd=").Success:
+						s = s.Substring(11);
+						if ( s[1]!=Path.VolumeSeparatorChar ) s = Path.GetFullPath( Path.Join(this.ExeDir,s) );
+						this.OptCmdReport = s;
+						break;
+
+					// [/SaveXML] Duplicate patch.xml out of result .exe or .tbp file.
+					case string s when Regex.Match(s, @"(?i)^\/SaveXML$").Success:
+						this.OptSaveXML = true;
+						break;
+#endif
+					// [--format=VCDiff, -fv] VCDiff/RFC3284
+					case string s1 when s1.ToLower() == "--format=vcdiff":
+					case string s2 when s2.ToLower() == "-fv":
+						this.DeltaFmt = DeltaFormat.VCDiff;
+						break;
+
+					// [--format=Google, -fo] open-vcdiff/SDCH
+					case string s1 when s1.ToLower() == "--format=google":
+					case string s2 when s2.ToLower() == "-fo":
+						this.DeltaFmt = DeltaFormat.VCDiff_Google;
+						break;
+
+					// [--format=XDelta, -fx] VCDiff/XDelta3
+					case string s1 when s1.ToLower() == "--format=xdelta":
+					case string s2 when s2.ToLower() == "-fx":
+						this.DeltaFmt = DeltaFormat.VCDiff_XDelta3;
+						break;
+
+					// [--format=BsDiff, -fb] BSDiff+Brotli(Optimal)
+					case string s1 when s1.ToLower() == "--format=bsdiff":
+					case string s2 when s2.ToLower() == "-fb":
+						this.DeltaFmt = DeltaFormat.BsPlus_Optimal;
+						break;
+
+					// [--format=BsFast] BSDiff+Brotli(Fastest)
+					case string s when s.ToLower() == "--format=bsfast":
+						this.DeltaFmt = DeltaFormat.BsPlus_Fastest;
+						break;
+
+					// [--quiet, -q] Mute CUI messages
+					case string s1 when s1.ToLower() == "--quiet":
+					case string s2 when s2.ToLower() == "-q":
+						this.IsQuiet = true;
+						break;
+
+					default:
+						string str;
+						if ( IsRelativePath(args[i]) )
+						{
+							// Relative to current directory
+							str = Path.Join(Environment.CurrentDirectory, args[i]);
+						}
+						else
+						{
+							// Full path
+							str = args[i];
+						}
+						str = Path.GetFullPath(str);	// force valid path
+
+						// accept only first two file names
+						if ( string.IsNullOrEmpty(this.SourceXMLName) )
+						{
+							this.SourceXMLName = str;
+						}
+						else if ( string.IsNullOrEmpty(this.OutputName) )
+						{
+							this.OutputName = str;
+						}
+						break;
+				}	// switch ( args[i] )
 			}
+
+			// If two file names are both supplied, this.DeltaFmt indicates CUI mode
+			if ( string.IsNullOrEmpty(this.OutputName) )
+			{
+				// If not CUI mode, this.DeltaFmt is DeltaFormat.None
+				this.DeltaFmt = DeltaFormat.None;
+			}
+			else if ( this.DeltaFmt == DeltaFormat.None )
+			{
+				// If CUI mode, this.DeltaFmt is not DeltaFormat.None
+				this.DeltaFmt = DeltaFormat.VCDiff;
+			}
+		}
+
+		// Test if given path is relative path
+		//	when the first letter is '\' or '/', absolute
+		//	when the given string contains ":\" or ":/", absolute
+		//	other than above, relative
+		public static bool IsRelativePath(string path_to_test)
+		{
+			string testDrive1 = new string( new char[] {Path.VolumeSeparatorChar, Path.DirectorySeparatorChar} );
+			string testDrive2 = new string( new char[] {Path.VolumeSeparatorChar, Path.AltDirectorySeparatorChar} );
+
+			if ( path_to_test.Contains(Path.DirectorySeparatorChar)    ) return false;
+			if ( path_to_test.Contains(Path.AltDirectorySeparatorChar) ) return false;
+			if ( path_to_test.Contains(testDrive1) ) return false;
+			if ( path_to_test.Contains(testDrive2) ) return false;
+
+			return true;
 		}
 
 		//------------------------------------------------------------
