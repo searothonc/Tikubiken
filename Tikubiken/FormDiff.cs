@@ -13,7 +13,6 @@ namespace Tikubiken
 		//------------------------------------------------------------
 		// Fields
 		//------------------------------------------------------------
-		private Tikubiken.MyApp myApp;
 		private Processor m_processor;
 
 		private Dictionary<string,DeltaFormat> dicEncoding = 
@@ -45,13 +44,11 @@ namespace Tikubiken
 		// Form initialization on load
 		private void FormDiff_Load(object sender, EventArgs e)
 		{
-			// Application Manager
-			myApp = new Tikubiken.MyApp();
 
 			// Initialyze UIs
 			InitDropdown();
 			ClearLogText();
-			checkBoxClearLog.Checked = myApp.CheckClearLog;
+			checkBoxClearLog.Checked = Program.App.CheckClearLog;
 		}
 
 		// Window is about to close
@@ -76,8 +73,8 @@ namespace Tikubiken
 		private void FormDiff_FormClosed(object sender, FormClosedEventArgs e)
 		{
 			// Save changes to ini file
-			myApp.CheckClearLog = checkBoxClearLog.Checked;
-			myApp.IniSave();
+			Program.App.CheckClearLog = checkBoxClearLog.Checked;
+			Program.App.IniSave();
 		}
 
 		//------------------------------------------------------------
@@ -89,14 +86,14 @@ namespace Tikubiken
 		{
 			using (OpenFileDialog dlg = new OpenFileDialog()) {
 				// dlg.Title = "Open File";
-				dlg.InitialDirectory = myApp.LastDir;
+				dlg.InitialDirectory = Program.App.LastDir;
 				dlg.Filter = Resources.ofd_src_filter;
 				dlg.DefaultExt = "*.xml";
 
 				if (dlg.ShowDialog() == DialogResult.OK) {
 					// dialog closed by [OK] button
 					textBoxSource.Text = dlg.FileName;
-					myApp.LastDir = System.IO.Path.GetDirectoryName(dlg.FileName);
+					Program.App.LastDir = System.IO.Path.GetDirectoryName(dlg.FileName);
 				} else {
 					// dialog closed by [Cancel] button
 				}
@@ -105,7 +102,7 @@ namespace Tikubiken
 
 		// Get [Source XML] file path
 		private string GetSourcePath()
-			=> MakeFullPath(textBoxSource.Text, myApp.LastDir);
+			=> MakeFullPath(textBoxSource.Text, Program.App.LastDir);
 
 		// [Source XML] text box
 		private void textBoxSource_TextChanged(object sender, EventArgs e)
@@ -124,7 +121,7 @@ namespace Tikubiken
 		{
 			using (SaveFileDialog dlg = new SaveFileDialog() ) {
 				// dlg.Title = "Save as";
-				dlg.InitialDirectory = myApp.LastOut;
+				dlg.InitialDirectory = Program.App.LastOut;
 				dlg.Filter = Resources.ofd_out_filter;
 				dlg.DefaultExt = "*.exe";
 				dlg.OverwritePrompt=false;
@@ -132,7 +129,7 @@ namespace Tikubiken
 				if (dlg.ShowDialog() == DialogResult.OK) {
 					// dialog closed by [OK] button
 					textBoxOutput.Text = dlg.FileName;
-					myApp.LastOut = System.IO.Path.GetDirectoryName(dlg.FileName);
+					Program.App.LastOut = System.IO.Path.GetDirectoryName(dlg.FileName);
 				} else {
 					// dialog closed by [Cancel] button
 				}
@@ -145,7 +142,7 @@ namespace Tikubiken
 
 		// Get [Output] file path
 		private string GetOutputPath()
-			=> MakeFullPath(textBoxOutput.Text, myApp.LastOut);
+			=> MakeFullPath(textBoxOutput.Text, Program.App.LastOut);
 
 		// Ensure path as full path
 		private string MakeFullPath(string userInput, string basePath)
@@ -205,7 +202,7 @@ namespace Tikubiken
 		//------------------------------------------------------------
 
 		// Add text to log box 
-		private void AddLogText(string text)
+		public void AddLogText(string text)
 		{
 			if ( textBoxLog.Text.Length > 0 ) textBoxLog.Text += Environment.NewLine;
 			textBoxLog.Text += text;
@@ -307,11 +304,12 @@ namespace Tikubiken
 								GetOutputPath(),
 								GetDropdownValue()
 							);
+
 						// for "/ReportCmd=" commad line option
 						// must before asynchronous things
-						if ( myApp.OptCmdReport != null )
+						if ( Program.App.OptCmdReport != null )
 						{
-							using ( var sw = new StreamWriter(myApp.OptCmdReport) )
+							using ( var sw = new StreamWriter(Program.App.OptCmdReport) )
 							{
 								sw.Write(m_processor.ReportBatch());
 								sw.Close();
@@ -320,7 +318,7 @@ namespace Tikubiken
 
 						// Start and await asyncronous processing
 						SetupCancelButton();
-						await m_processor.RunAsync(myApp.OptSaveXML);
+						await m_processor.RunAsync(Program.App.OptSaveXML);
 						AddLogText( "---Complete---" );
 					}
 				}
@@ -330,10 +328,10 @@ namespace Tikubiken
 					// So the exception is simply discarded.
 					AddLogText( "---Cancelled---" );
 				}
-				catch (Processor.Error pe)
+				catch (Error pe)
 				{
 					// Show reason why the processor has aborted.
-					AddLogText( "!!!Error!!!" );
+					//AddLogText( "!!!Error!!!" );
 					AddLogText( pe.ToString() );
 					AddLogText( "---Aborted---" );
 				}

@@ -157,7 +157,7 @@ namespace Tikubiken
 				{
 					case string s when Regex.Match(s, @"(?i)^\/NoUnpack=").Success:
 						s = s.Substring(10);
-						if ( s[1]!=':' ) s = Path.GetFullPath( Path.Join(this.ExeDir.FullName, s) );
+						if ( s[1]!=Path.VolumeSeparatorChar ) s = Path.GetFullPath( Path.Join(this.ExeDir.FullName, s) );
 						this.OptNoUnpack = s;
 						break;
 				}
