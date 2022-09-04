@@ -1,0 +1,427 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+Sample XML document of Tikubiken
+Ver1.0 Copyright (c) 2021 Searothonc
+
+This file is distributed under CC0 license(public domain). 
+Feel free to copy, modify and reprint for your own purpose.
+-->
+<!DOCTYPE Tikubiken SYSTEM "http://raw.githubusercontent.com/searothonc/Tikubiken/master/dtd/tikubiken_diff100.dtd" [
+	<!ENTITY	path_cover_images		"..\tikubiken\cover_images">
+	<!ENTITY	path_deploy_target	"..\Deployments">
+	<!ENTITY	path_deploy_source	".\old_versions">
+
+	<!-- Common messages -->
+	<!ENTITY	en_cancel			"Update aborted. Please close the application.">
+	<!ENTITY	en_error			"No update was made because some errors occurred.">
+	<!ENTITY	en_misplace		"Failed to find the installed files to apply updates. Please place this program in the folder where the game has been installed and then restart.">
+	<!ENTITY	en_shortspace	"Insufficient free space on the destination drive.">
+	<!ENTITY	en_newest			"There is no need to update because the installed version is already newest.">
+
+	<!ENTITY	jp_cancel			"アップデートを中止しました。アプリケーションを終了してください。">
+	<!ENTITY	jp_error			"エラーが発生したため更新は行われませんでした。">
+	<!ENTITY	jp_misplace		"更新を適用するインストール済ファイルが見つかりません。本プログラムをインストール先のフォルダに配置して起動して下さい。">
+	<!ENTITY	jp_shortspace	"インストール先ドライブの空き容量が足りません。">
+	<!ENTITY	jp_newest			"インストール済みのバージョンは既に最新版のためアップデートの必要はありません。">
+]>
+<!--●XML宣言(<?xml ...>)と文書型(DOCTYPE)宣言
+このファイルがXML文書であることを宣言し、タグの構造が!DOCTYPEで参照するDTDに従うことを宣言します。
+おまじないみたいなものなので、ただこの通りに書けばOKです。
+
+	<?xml version="1.0" encoding="UTF-8" ?>
+	<!DOCTYPE Tikubiken SYSTEM "http://raw.githubusercontent.com/searothonc/Tikubiken/master/dtd/tikubiken_diff100.dtd">
+
+ファイルで使う文字コードはencoding属性の指定通りUTF-8になります。
+-->
+<!--●実体参照
+実体参照とは、HTMLなんかで"&gt;"とか"&lt;"って書くと"<"や">"に置き換わるアレです。
+TikubikenのDTDでは実体参照は一切定義されていないので、そのままだとXML既定の定義済み実体のみが使用可能です。
+		▽XML既定の定義済み実体
+			実体参照表記		出力
+			&quot;					"
+			&amp;						&
+			&apos;					'
+			&lt;						<
+			&gt;						>
+<text>要素内などでHTML感覚で空白などを使いたい場合は、そのXML文書内で実体定義を追加して下さい。
+		▽記述例
+		<!DOCTYPE Tikubiken SYSTEM "https://raw.../tikubiken_diff100.xml" [
+			<!ENTITY	nbsp		" ">
+			<!ENTITY	emsp		"　">
+		]>
+DOCTYPE宣言を上記のように書くと、&nbsp;で半角スペース、&emsp;で全角スペースに変換されます。
+このサンプルXMLの例のように、繰り返し現れる用語や、フォルダへのパスなど、工夫次第でさまざまな
+文字列の置き換えに応用できます。
+-->
+
+<!--●ファイルパスの指定
+ファイルパスは絶対パスまたは相対パスで指定可能です。
+特に指示がなければ相対パスはxmlファイルが置かれているフォルダが基準になります。
+-->
+
+<!--●IETF言語タグ
+同じ意味の内容を複数言語に対して定義する要素(title,cover,textなど)ではlang属性で対象言語を指定します。
+アップデート・プログラム実行時に、lang属性と一致する要素を採用することで多言語対応を実現します。
+lang属性の指定は基本的にはIETF言語タグ＝ネットでよく見かけるja-JPとかen-USという表記です。
+
+	IETF言語タグ - Wikipedia
+	https://ja.wikipedia.org/wiki/IETF%E8%A8%80%E8%AA%9E%E3%82%BF%E3%82%B0
+
+lang属性で指定した文字列の長さまでが比較され、全文一致すればその要素を採用することになります。
+システムのロケール情報がlang属性より長い場合、残りの部分は無視されます。
+つまり、たとえば国籍を問わずに英語を全部指定したいなら、"en"や"en-"で、
+"en-US","en-UK","en-AU","en-CA"などにすべて一致します。
+
+	ISO 639-1コード一覧 - Wikipedia
+	https://ja.wikipedia.org/wiki/ISO_639-1%E3%82%B3%E3%83%BC%E3%83%89%E4%B8%80%E8%A6%A7
+
+どのlang属性とも一致しなかった場合は、lang属性未指定の要素が規定値として採用されます。
+-->
+
+<!--●<Tikubiken>要素
+‣ XML文書のルート要素。頭文字Tだけ大文字で、あとは小文字。
+	⁃ xmlは大文字・小文字を区別するので注意。<tikubiken>とかだとエラーが出ます。
+	⁃ TikubikenのXML文書型では、ルート要素のみ頭文字が大文字で、他のすべての子要素は全部小文字です。
+‣ format属性が必須で値は"diff"固定。
+‣ 1つ目の子要素は<updater>で固定。省略可。
+‣ 2つ目以降に任意個数(0含む)の<patch>要素を置きます。続いて1個以上で任意の数の<install>要素を置きます。
+	⁃ この順序は入れ替えることはできません。
+	⁃ <patch>要素は<install>要素の中でも直接指定できるので、必要なければ置かなくても可。
+-->
+<Tikubiken format="diff">
+
+	<!--●<updater>要素
+	‣ アップデータ・プログラムの外観を定義する要素。
+	‣ 属性は持ちません。
+	‣ 子要素として任意の数の<cover>および<title>要素を持つことができます(省略可)。
+	▼<title>要素
+	‣ アップデータ・プログラムのウィンドウタイトルバーに表示されるタイトルを指定します。
+	‣ 省略されると規定値として"Updater"が採用されます。
+	‣ text属性が必須で、タイトルバーの表示文字列を指定します。
+	‣ オプションでlang属性が指定可能で、IETFの言語タグ(ja-JP、en-USなど)で指定します。
+	‣ <title>要素で指定したタイトルは、エラー時に表示されるメッセージボックスの
+		タイトルバーにも反映されます。その場合、横幅がメインウィンドウより短いので、
+		短めのタイトルを指定することが推奨されます。
+	‣ メインウィンドウのタイトルバーは、後で<message>タグ内の<text type="title">タグが
+		指定されると上書きされます。詳細なタイトルが必要なら<text type="title">で指定します。
+	▼<cover>要素
+	‣ アップデータ・プログラムのウィンドウに表示するバナー画像を指定します。
+	‣ 省略されると規定の画像が表示されます。
+	‣ image属性が必須で、画像ファイルへのパスを指定します。
+		⁃ 最小480x64の画像で、大きさに合わせてウィンドウが拡大します。
+		⁃ .NETが対応している画像形式はすべて使えます(BMP/JPG/GIF/PNG/EXIG/TIFF/WMF/EMF)
+	‣ オプションでlang属性が指定可能で、IETFの言語タグ(ja-JP、en-USなど)で指定します。
+	▼<localise>要素
+	‣ アップデータ・プログラムのウィンドウ内の表示内容を多言語化する要素です。
+	‣ target属性が必須で、多言語化する対象を指定します。
+		⁃ 指定可能な値は"progress""start""cancel""exit""processing"のうちのひとつ。
+		⁃ "progress" は進捗状況プログレスバーに添えられたラベルの表示テキスト
+		⁃ "start" は[開始]ボタンの表示テキスト
+		⁃ "cancel" は[キャンセル]ボタンの表示テキスト
+		⁃ "exit" は[終了]ボタンの表示テキスト
+		⁃ "processing" は処理進行中に押せないボタンに表示されるテキスト
+		⁃ &amp;Xのようにアルファベットの前に&amp;を置くことでニーモニック
+			(キーボードフォーカスを移動するショートカットキー)を指定できます。
+	‣ 他の要素と異なり、<localise>要素はlang属性も必須で、IETFの言語タグ(ja-JP、en-USなど)で
+		対象の言語を指定します。
+	‣ 要素の内容テキストで翻訳された文字列を指定します。文字前後の空白は除去され、改行は無視されます。
+	-->
+	<updater>
+		<title text="&quot;Virgin&apos;s Protection Magic&quot; updater"/>
+		<title text="『処女を守る魔法』アップデータ" lang="ja"/>
+
+		<!-- 実体参照の応用: この2つの<cover>要素で指定しているファイルは同じフォルダにあります -->
+		<cover image=".\tikubiken\cover_images\cover-640x160-en.png"/>
+		<cover image="&path_cover_images;\cover-640x160-jp.png" lang="ja"/>
+
+		<localise target="progress" lang="ja">進捗状況</localise><!-- "Progress" for default -->
+		<localise target="start" lang="ja">アップデート開始(&amp;S)</localise>
+		<localise target="start" lang="en">&amp;Start updating</localise>
+		<localise target="cancel" lang="ja">キャンセル(&amp;C)</localise>
+		<localise target="exit" lang="ja">終了(&amp;E)</localise>
+		<localise target="processing" lang="ja">処理中...</localise>
+
+		<!--●<layout>要素
+		‣ Windowsフォーム・コントロールのプロパティを上書きしてレイアウトを変更します。
+		‣ 通常はこれらのタグを使う必要はまったくありません。
+		‣ "target"属性で変更するコントロールを指定し、子要素<location><size><anchor>
+		  <autosize>で対応するプロパティを設定します。
+		‣ 設定するにはWindowsフォームについての知識が必要なため、ここでは詳しい説明は省略します。
+		‣ 下記に、レイアウトを変更しない場合の規定値をコメント内に記載しておきます。
+		  変更できるのは下記で規定値を挙げている値だけです。
+		-->
+		<!--
+		<layout target="form">
+			<autosize value="true"/>
+			<size width="512" height="320"/>
+		</layout>
+		<layout target="pictureBox">
+			<anchor styles="Top Bottom Left Right"/>
+			<location x="8" y="8"/>
+			<size width="480" height="64"/>
+		</layout>
+		<layout target="labelMessage">
+			<autosize value="false"/>
+			<anchor styles="Bottom Left Right"/>
+			<location x="8" y="80"/>
+			<size width="480" height="120"/>
+		</layout>
+		<layout target="buttonStart">
+			<autosize value="true"/>
+			<anchor styles="Bottom"/>
+			<location x="208" y="207"/>
+			<size width="96" height="25"/>
+		</layout>
+		<layout target="labelProgress">
+			<autosize value="true"/>
+			<anchor styles="Bottom Left"/>
+			<location x="8" y="232"/>
+			<size width="52" height="15"/>
+		</layout>
+		<layout target="progressBar">
+			<anchor styles="Bottom Left Right"/>
+			<location x="8" y="248"/>
+			<size width="472" height="23"/>
+		</layout>
+		-->
+	</updater>
+
+	<!--●<patch>要素
+	‣ 2つのフォルダの差分から作成されるパッチバンドルを定義する要素。
+	‣ version属性が必須で、この名前でアーカイブに保存されます。
+		⁃ そのため、ファイル名として有効な一意(重複不可)の文字列である必要があります。
+		⁃ ファイル名に使用できない特殊文字は使用できません。
+	‣ 子要素として<branch>要素と<target>要素をこの順番でひとつずつ必須で持ちます。
+	▼<branch>要素
+	‣ アップデート元(旧バージョン)となるコンテンツのフォルダを指定します。
+		⁃ ユーザーの手元にあるアップデート前のファイル群のイメージです。
+	‣ path属性が必須で、アップデート前ファイルイメージを格納するフォルダへのパスを指定します。
+	‣ 子要素として任意の数(省略可)の<exclude>要素を持つことが可能です。
+	▼<target>要素
+	‣ アップデート先(新バージョン)となるコンテンツのフォルダを指定します。
+		⁃ アップデート・プログラムを実行すると、ユーザーの手元にあるファイル群がこのイメージに更新されます。
+	‣ path属性が必須で、アップデート後ファイルイメージを格納するフォルダへのパスを指定します。
+	‣ 子要素として任意の数(省略可)の<exclude>要素を持つことが可能です。
+	▼<exclude>要素
+	‣ <branch><target>の子要素として任意の数現れ、除外ファイル/パスを定義します。
+	‣ 差分作成時に処理から除外するフォルダまたはファイルを、ファイル名またはパスで指定します。
+		⁃ name属性で指定した文字列にディレクトリ区切り文字(Windowsの場合は"\"と"/")が
+			含まれている場合は、フルパス全体と比較します。
+		⁃ name属性で指定した文字列にディレクトリ区切り文字が含まれていない場合、
+			親ディレクトリまでを除いたファイル名やディレクトリ名と比較します。
+		⁃ たとえば、"Save*"というワイルドカードが指定された場合、
+			"C:\some_dir\Save01"にも"C:\some_dir\sub_dir\Save02"にもマッチしますが、
+			"*\sub_*\Save*"というワイルドカードは後者にしかマッチしません。
+	‣ オプションでmatch属性が指定可能で、name属性のフィルタ方法を選択します。
+		⁃ フィルタには、exact(フィルタなし、書かれたまま全長一致)、
+		  wildcard(DOS窓式ワイルドカード)、regex(正規表現)が指定できます。
+		⁃ 省略時の規定値はwildcardです。
+		⁃ 正規表現のパターン文字列は下記を参照。
+				正規表現言語 - クイック リファレンス | Microsoft Docs
+				https://docs.microsoft.com/ja-jp/dotnet/standard/base-types/regular-expression-language-quick-reference
+	‣ 指定のフィルタにマッチするファイル・フォルダが存在しない場合は単純に無視されます。
+	-->
+	<patch version="v116steam_jp">
+		<branch path="..\Deployments\v116-jp_steam_sc">
+			<exclude name="Save"/>
+		</branch>
+		<target path="..\Deployments\v116-jp_steam_hc">
+			<exclude name=".*Save.*" match="regex"/>
+		</target>
+	</patch>
+
+	<!--●<install>要素
+	‣ インストール先フォルダ(ユーザーの手元にある<branch>に相当するフォルダ)の探索方法を定義します。
+	‣ 最初の子要素として1個の<registry>要素を持つことができます(省略可)。
+		⁃ <registry>要素を省略した場合、アップデータ・プログラムをインストール先
+			ディレクトリに置いて起動する方法が指定されたものとして扱います。
+	‣ 2つ目以降の子要素として1つ以上の<identity>要素を持ちます。
+	‣ <identity>要素の中で具体的なアップデート処理が定義されます。
+	▼<registry>要素
+	‣ インストール先フォルダが格納されているレジストリ文字列値(REG_SZ)へのパスを定義します。
+	‣ アップデート・プログラムは<registry>要素で指定されたレジストリ値を読み、
+	  インストール先フォルダとして、他の兄弟要素で指定した動作を実行します。
+	‣ <registry>要素が省略された場合、アップデート・プログラムが配置されたフォルダに対して適用されます。
+	  つまり、<registry>要素を持たない<install>要素は更新したいソフトウェアのフォルダに
+	  アップデート・プログラムを配置して実行した場合の動作を定義します。
+	‣ <registry>要素を持たない<install>要素を複数指定することはできません。
+	‣ root属性、subkey属性、value属性のすべてが必須で、それぞれルートキー、
+		サブキーのパス、REG_SZ値の名前を指定します。
+		⁃ root属性は"HKEY_CURRENT_USER""HKEY_LOCAL_MACHINE"といったキーの名前か、
+			"HKCU""HKLM"といった省略形で指定します。
+	-->
+	<install>
+		<registry root="HKCU" subkey="SOFTWARE\Searothonc\VPM" value="InstallDir"/>
+
+		<!--●<identity>要素
+		‣ バージョン判定用ファイルと、バージョンが一致した際に適用するパッチバンドルを定義します。
+		‣ path属性が必須で、「インストール先フォルダ」からの相対パスで、バージョン確認用ファイルを指定します。
+			⁃ 絶対パスによる指定はできません。
+			⁃ バージョンが変わっても、インストールフォルダからの相対位置が変わらず、
+				内容は必ず変わるファイルを選んで下さい。
+			⁃ このファイルの内容が同一なら、同一のバージョンと判断します。
+				比較元フォルダと比較先フォルダの両方の同じ位置に同じ名前で違う内容のファイルが必要です。
+		‣ オプションでmethod属性を指定可能で、ハッシュ関数を"MD5"また"SHA1"から選びます。規定値は"SHA1"です。
+			⁃ 差分作成時に指定ファイルのハッシュ値を指定の方法で計算して差分データに保存します。
+			⁃ アップデート・プログラム実行時に、指定のファイルのハッシュ値を計算し、
+				一致した<identity>要素の内容を適用します。
+			⁃ 子要素として<patch>要素または<patchref>要素を持ち、上記のハッシュ値が<install>要素で指定した
+				フォルダに一致した際に適用するパッチバンドルのバージョンIDを指定します。
+			⁃ 続いて<message>要素を持ち、上記のパッチを適用する際に表示される各種メッセージを各国語で指定します。
+		▼<patch>要素または<patchref>要素
+		‣ 最初の子要素として1個の<patch>要素あるいは<patchref>要素が必須です。
+			⁃ <patch>要素の内容は前述のものと同じです。
+			⁃ <patchref>要素が指定された場合、version属性で指定された名前と同じ名前を持つ、
+			  他の場所で定義された<patch>要素の内容を参照します。
+		▼<message>要素
+		‣ 2番目の子要素として<message>要素を指定することができます(省略可)。
+			⁃ 属性はありません。
+			⁃ 子要素として任意の数の<text>要素を指定することができます(省略可)。
+		▼<text>要素
+		‣ アップデート・プログラムが処理中に表示するメッセージを定義します。
+		‣ type属性が指定可能で、その<text>要素の内容を表示するタイミングを指定します。
+			⁃ 下記の値のうちのどれかを指定します。
+				ready.............アップデート・プログラム起動時に表示します。
+				process...........更新処理中に表示します。
+				complete..........更新完了時に表示します。
+				cancel............[キャンセル]ボタンを押して更新処理を中止した際に表示します。
+				title.............アップデート・プログラムのウィンドウタイトルバーに表示されるタイトルを上書きします。
+				error.............更新処理中にエラーが発生し、処理を中止したときに表示されるエラー・メッセージです。
+				err_misplace......アップデート・プログラム起動時にインストール先フォルダが
+													特定できなかった時に表示されるエラー・メッセージです。
+				err_shortspace....インストール先ドライブの空き容量が足りないと推測された時に
+													表示されるエラー・メッセージです。
+				err_newest........インストール先フォルダが既に最新版だった場合に表示されるエラーメッセージです。
+			⁃ 省略された場合の規定値は"ready"です。
+		‣ <updater>要素内の<title>属性がエラー時に表示されるメッセージボックスのタイトルバーにも
+			反映されるのに対して、<text type="title">はメインウィンドウのタイトルだけを変更します。
+		‣ オプションでlang属性が指定可能で、IETFの言語タグ(ja-JP、en-USなど)で指定します。
+		‣ 要素の内容は、type属性で指定したタイミングで表示されるメッセージです。
+			⁃ 行頭、行末の空白は除去される。
+			⁃ <br/>要素は改行に変換される。
+		‣ <message>要素が省略された場合や<text>要素が省略された場合、既定のメッセージが表示されます。
+		-->
+		<identity path="Game.rgss3a" method="SHA1">
+			<patchref version="v116steam_jp"/>
+			<message>
+				<text type="title">"Virgin's Protection Magic" v1.1.6 Steam(Japanese) edition - complete updater</text>
+				<text type="title" lang="ja">『処女を守る魔法』 v1.1.6 Steam(日本語)版 - コンプリート表現パッチ</text>
+
+				<text type="ready">
+					This application is a patch program to update "Virgin's Protection Magic Steam Edition v1.1.6 Japanese" to "Virgin's Protection Magic Complete Edition v1.1.6 Japanese".<br/>
+					Click [Start updating] button when ready.<br/>
+				</text>
+
+				<text type="process">Applying updates...</text>
+				<text type="complete">Update completed.</text>
+
+				<text type="cancel">&en_cancel;</text>
+				<text type="error">&en_error;</text>
+				<text type="err_misplace">&en_misplace;</text>
+				<text type="err_shortspace">&en_shortspace;</text>
+				<text type="err_newest">&en_newest;</text>
+
+				<text type="ready" lang="ja">
+					『処女を守る魔法 - Steam版 v1.1.6 日本語』を『処女を守る魔法 - 完全版 v1.1.6 日本語』に更新します。<br/>
+					準備ができたら[アップデート開始(S)]ボタンをクリックして下さい。
+				</text>
+
+				<text type="process" lang="ja">アップデート中...</text>
+				<text type="complete" lang="ja">アップデートが完了しました。</text>
+
+				<!-- 表示内容を直接記述する以外に、実体参照で挿入することもできます。 -->
+				<text type="cancel" lang="ja">&jp_cancel;</text>
+				<text type="error" lang="ja">&jp_error;</text>
+				<text type="err_misplace" lang="ja">&jp_misplace;</text>
+				<text type="err_shortspace" lang="ja">&jp_shortspace;</text>
+				<text type="err_newest" lang="ja">&jp_newest;</text>
+			</message>
+		</identity>
+	</install>
+
+	<!--
+	アップデート・プログラムをインストール先フォルダのルートに配置する場合の書き方は下記の通りになります。
+	この形式(<registry>要素を持たない)の<install>要素はXML文書中にひとつしか定義することができません。
+	-->
+	<install>
+		<identity path="Game.rgss3a" method="SHA1">
+			<patch version="v115-jp">
+				<branch path=".\Deployments\v115"/>
+				<target path=".\Deployments\v116-jp_dlsite"/>
+			</patch>
+			<message>
+				<text type="title">"Virgin's Protection Magic" v1.1.5 to v1.1.6 updater</text>
+				<text type="title" lang="ja">『処女を守る魔法』 v1.1.5 → v1.1.6 アップデータ</text>
+
+				<text type="ready">
+					This application is a patch program to update "Virgin's Protection Magic – retail package edition v1.1.5" to "Virgin's Protection Magic DL-Edition v1.1.6 Japanese".<br/>
+					Place this program file(vpm_updater_v116s2c.exe) in the folder where the game has been installed to and click [Start updating] button.
+				</text>
+				<text type="ready" lang="ja">
+					『処女を守る魔法 - パッケージ版 v1.1.5』を『処女を守る魔法 - DL版 v1.1.6 日本語』に更新します。<br/>
+					本実行ファイル(VPM_Updater_v116s2c.exe)をインストール先フォルダ(Game.exeと同じ場所)に置き、[アップデート開始(S)]ボタンをクリックして下さい。
+				</text>
+
+				<text type="process">Applying updates...</text>
+				<text type="process" lang="ja">アップデート中...</text>
+				<text type="complete">Update completed.</text>
+				<text type="complete" lang="ja">アップデートが完了しました。</text>
+
+				<!-- 実体参照を使えば、別々の場所でまったく同じ内容を挿入できます。 -->
+				<text type="cancel">&en_cancel;</text>
+				<text type="cancel" lang="ja">&jp_cancel;</text>
+				<text type="error">&en_error;</text>
+				<text type="error" lang="ja">&jp_error;</text>
+				<text type="err_misplace">&en_misplace;</text>
+				<text type="err_misplace" lang="ja">&jp_misplace;</text>
+				<text type="err_shortspace">&en_shortspace;</text>
+				<text type="err_shortspace" lang="ja">&jp_shortspace;</text>
+				<text type="err_newest">&en_newest;</text>
+				<text type="err_newest" lang="ja">&jp_newest;</text>
+			</message>
+		</identity>
+	</install>
+
+<!-- ●テキスト未指定時の規定値一覧(日本語)
+
+<title text="title">              Updater
+
+<localise target="progress">      進捗状況
+<localise target="start">         開始(&amp;S)
+<localise target="cancel">        キャンセル(&amp;C)
+<localise target="exit">          終了(&amp;E)
+<localise target="processing">    処理中...
+
+<text type="ready">               アップデートを開始するには[開始]ボタンをクリックして下さい。
+<text type="process">             アップデート中...
+<text type="complete">            完了
+<text type="cancel">              アップデートを中止しました。アプリケーションを終了してください。
+<text type="error">               エラーが発生したため更新は行われませんでした。
+<text type="err_misplace">        インストール先のディレクトリが見つかりません。
+<text type="err_shortspace">      ディスクの空き容量が不足しています。
+<text type="err_newest">          すでに最新版です。
+
+-->
+
+<!-- ●List of default values for unspecified texts(English)
+
+<title text="title">              Updater
+
+<localise target="progress">      Progress
+<localise target="start">         &amp;Start
+<localise target="cancel">        &amp;Cancel
+<localise target="exit">          &amp;Exit
+<localise target="processing">    Processing...
+
+<text type="ready">               Click [Start] button to start updating.
+<text type="process">             Updating...
+<text type="complete">            Completed.
+<text type="cancel">              Update cancelled. Please close the application.
+<text type="error">               Update aborted for an error occured.
+<text type="err_misplace">        Not found the destination directory of installation.
+<text type="err_shortspace">      Not enough disk space.
+<text type="err_newest">          Already newest version.
+
+-->
+
+</Tikubiken>
